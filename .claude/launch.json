@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wht-local",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["build/serve.mjs", ".", "5173"],
+      "port": 5173
+    },
+    {
+      "name": "wht-wp",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["build/serve.mjs", "dist-wp", "5174"],
+      "port": 5174
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+node_modules/
+.vercel/
+
+# Packaged hand-off copy, rebuilt on demand
+*.zip
+
+# Superseded single-page concept
+wht-electrical-improved.html

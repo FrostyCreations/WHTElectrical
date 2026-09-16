@@ -1,0 +1,15 @@
+{
+  "name": "wht-electrical-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WHT Electrical - 10 page static site, generated from build/pages.mjs",
+  "scripts": {
+    "build": "node build/build.mjs --wp",
+    "build:local": "node build/build.mjs",
+    "preview": "node build/serve.mjs . 5173",
+    "preview:wp": "node build/serve.mjs dist-wp 5174"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
