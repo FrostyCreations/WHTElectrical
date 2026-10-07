@@ -8,7 +8,7 @@
    missing icons, duplicate ids and heading problems. The build
    fails (exit 1) if anything is wrong.
    ========================================================= */
-import { writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
+import { writeFileSync, mkdirSync, copyFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MODE, ROUTES, ICON_NAMES, head, header, footer } from './layout.mjs';
@@ -19,8 +19,8 @@ MODE.wp = process.argv.includes('--wp');
 const { pages } = await import('./pages.mjs');
 const outDir = MODE.wp ? join(root, 'dist-wp') : root;
 
-/* Links that intentionally point at pages outside the 10-page launch build. */
-const EXTERNAL_PLACEHOLDERS = new Set(['/privacy-policy/', '/terms/']);
+/* Every internal link now resolves to a generated page, so nothing is skipped. */
+const EXTERNAL_PLACEHOLDERS = new Set();
 
 const outPath = (key) => MODE.wp
     ? join(outDir, ROUTES[key].wp, 'index.html')
@@ -50,6 +50,13 @@ if (missing.length) errors.push(`ROUTES with no page: ${missing.join(', ')}`);
 if (MODE.wp) {
     mkdirSync(join(outDir, 'assets'), { recursive: true });
     for (const f of ['wht.css', 'wht.js']) copyFileSync(join(root, 'assets', f), join(outDir, 'assets', f));
+    /* Photographs and the logo files travel with the build. */
+    for (const dir of ['photos', 'img', 'video']) {
+        const from = join(root, 'assets', dir);
+        if (!existsSync(from)) continue;
+        mkdirSync(join(outDir, 'assets', dir), { recursive: true });
+        for (const f of readdirSync(from)) copyFileSync(join(from, f), join(outDir, 'assets', dir, f));
+    }
 }
 
 /* ---------- Verify ---------- */
@@ -95,6 +102,12 @@ for (const { page, html, file } of rendered) {
     // 6. Every image has an alt attribute (empty is fine for decorative/placeholder)
     const noAlt = [...body.matchAll(/<img\b(?![^>]*\salt=)[^>]*>/g)].length;
     if (noAlt) fail(page, `${noAlt} <img> without alt`);
+
+    // 3b. Every local image actually exists. A wrong filename is otherwise silent.
+    for (const m of body.matchAll(/(?:src|href)="((?!https?:|data:|#|mailto:|tel:)[^"]*assets\/[^"]+)"/g)) {
+        const rel = m[1].replace(/^\//, '');
+        if (!existsSync(join(root, rel))) fail(page, `missing file: ${m[1]}`);
+    }
 
     // 7. Visible FAQ count matches the FAQPage schema
     const visibleFaqs = (body.match(/<details class="wht-faq">/g) || []).length;

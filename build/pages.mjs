@@ -5,15 +5,34 @@
    High-Intent Service and Standard Content templates).
    ========================================================= */
 import {
-    SITE, href, ic, btn, arrow, pageHero, sectionHead, bullets, slist, steps,
+    SITE, href, ic, btn, arrow, asset, pageHero, sectionHead, bullets, slist, steps,
     related, callout, faqSection, ctaBand,
 } from './layout.mjs';
 
 const HOME = { key: 'home', label: 'Home' };
 const ELECTRICAL = { key: 'electrical', label: 'Electrical' };
 
-const img = (id, w) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=${w > 1000 ? 65 : 70}`;
-const HERO_IMG = img('1621905251189-08b45d6a269e', 1400);
+/* Real WHT job photographs. The files live in assets/photos and were cropped to
+   the aspect of the slot they fill, so the width/height below are the true pixel
+   sizes of each file. Alt text describes what is actually in the frame. */
+const PHOTO = {
+    hero:        ['hero-solar-roof.jpg',          1280, 720, ''],
+    electrical:  ['electrical-technician.jpg',     800, 533, 'A WHT electrician beside a newly installed surface conduit run with isolators and junction boxes'],
+    solar:       ['solar-inverter-battery.jpg',    800, 534, 'Wall-mounted inverter and two lithium battery units installed under a thatched roof'],
+    plumbing:    ['plumbing-tanks.jpg',            800, 534, 'Three JoJo water storage tanks plumbed together on a paved base against a boundary wall'],
+    maintenance: ['maintenance-ceiling.jpg',       800, 533, 'A curved bulkhead ceiling with recessed downlights and a concealed LED strip'],
+    fault:       ['fault-finding-meter.jpg',       576, 384, 'A clamp meter taking a current reading during electrical fault finding'],
+    backup:      ['project-backup-power.jpg',      800, 533, 'An inverter and two lithium batteries mounted on a wall beside the distribution board'],
+    gate:        ['project-gate-motor.jpg',        800, 534, 'A gate motor installed alongside a sliding driveway gate'],
+    commercial:  ['project-commercial-solar.jpg',  800, 533, 'Solar panels covering the roof of a commercial building'],
+    dbboard:     ['electrical-db-board.jpg',       800, 534, 'An open distribution board showing circuit breakers and an earth leakage unit'],
+};
+
+/* <img> for a photo. Pass alt: '' to override the table when the image is decorative. */
+const photo = (key, { lazy = true, alt, extra = '' } = {}) => {
+    const [file, w, h, defaultAlt] = PHOTO[key];
+    return `<img src="${asset('photos/' + file)}" alt="${alt === undefined ? defaultAlt : alt}" width="${w}" height="${h}"${lazy ? ' loading="lazy"' : ''} decoding="async"${extra}>`;
+};
 
 /* ---------- Reusable approved copy ---------- */
 
@@ -79,11 +98,29 @@ const proofSection = ({ alt = false } = {}) => `
         </section>
 `;
 
+/* Review banner for the drafted legal pages. Delete these two calls once approved. */
+const draftNotice = () => `<div class="wht-draft">
+                    <strong>Draft for review, not approved copy</strong>
+                    <p>This page was drafted from how the website works. It is not from the WHT Website Build Pack, and nobody at WHT has confirmed it. Every statement needs checking, and a legal adviser should review it before the site goes live. Items marked in red need a decision. Delete this box once approved.</p>
+                </div>`;
+
 const photoSlot = (icon, label) => `<div class="wht-photoslot" aria-hidden="true">
                         ${ic(icon)}
                         <strong>${label}</strong>
                         <span>Replace with a real WHT photograph before launch</span>
                     </div>`;
+
+/* A single photograph across the content column, with a caption. */
+const photoFigure = (key, caption) => `
+        <section class="wht-section wht-section--tight">
+            <div class="wht-container">
+                <figure class="wht-figure">
+                    ${photo(key)}
+                    <figcaption>${caption}</figcaption>
+                </figure>
+            </div>
+        </section>
+`;
 
 const stars = () => `<div class="wht-review__stars" aria-hidden="true">${ic('star').repeat(5)}</div>`;
 
@@ -100,7 +137,7 @@ export const pages = [
         label: 'Home',
         title: 'WHT Electrical | Electrical, Solar, Plumbing & Maintenance Gauteng',
         description: 'Electrical, solar, plumbing and property maintenance services across Gauteng and nationally. Tell WHT what’s happening and request a quote.',
-        preload: HERO_IMG,
+        preload: 'photos/hero-solar-roof.jpg',
         faqs: [
             ['What services does WHT Electrical provide?', 'WHT provides general electrical work, fault finding, COCs, gate motors, electric fencing, generator connections, solar and battery backup, plumbing and property maintenance.'],
             ['Where is WHT Electrical based?', 'WHT Electrical is based in Northmead, Benoni, Gauteng.'],
@@ -112,8 +149,11 @@ export const pages = [
         <!-- SECTION 2 — HERO -->
         <section id="home" class="wht-hero" aria-labelledby="wht-h1">
             <div class="wht-hero__media">
-                <!-- REPLACE with real WHT technician / project photography (Tab 9) -->
-                <img src="${HERO_IMG}" alt="" width="1400" height="933" fetchpriority="high" decoding="async">
+                <!-- The poster is what loads first and what mobile keeps. wht.js attaches
+                     the video source only on wide screens, and never under reduced motion. -->
+                <video class="wht-hero__video" data-src="${asset('video/wht-hero.mp4')}"
+                    poster="${asset('photos/hero-solar-roof.jpg')}"
+                    autoplay muted loop playsinline preload="none" aria-hidden="true"></video>
             </div>
             <div class="wht-hero__panel" aria-hidden="true"></div>
             <svg class="wht-hero__edge" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
@@ -174,18 +214,12 @@ ${sectionHead({
             eyebrow: 'Our services', h2: 'Practical Solutions Across Your Property', id: 'wht-services-title',
             lead: 'WHT provides electrical, power, plumbing and maintenance services for homes, businesses and managed properties.',
         })}
-                <!-- REPLACE all four images with real WHT photography -->
                 <div class="wht-services">
-${[
-            ['electrical', '1621905252507-b35492cc74b4', 'Electrician standing beside an electrical installation'],
-            ['solar', '1509391366360-2e959784a276', 'Rows of installed solar panels'],
-            ['plumbing', '1607472586893-edb57bdc0e39', 'Exposed plumbing pipework on a brick wall'],
-            ['maintenance', '1562259949-e8e7689d7828', 'Paint roller applying fresh paint to a wall'],
-        ].map(([k, photo, alt]) => {
+${['electrical', 'solar', 'plumbing', 'maintenance'].map((k) => {
             const [icon, key, h3, p, link] = CARD[k];
             return `                    <article class="wht-service">
                         <div class="wht-service__media">
-                            <img loading="lazy" decoding="async" width="500" height="333" src="${img(photo, 500)}" alt="${alt}">
+                            ${photo(k)}
                             <span class="wht-service__badge">${ic(icon)}</span>
                         </div>
                         <div class="wht-service__body">
@@ -273,15 +307,16 @@ ${sectionHead({
             eyebrow: 'Recent work', h2: 'Recent WHT Projects', id: 'wht-work-title',
             lead: 'Real work tells the story better than generic claims. Explore examples of problems WHT has investigated, systems installed and property work completed for clients across Gauteng and South Africa.',
         })}
-                <!-- PLACEHOLDER PROJECTS — replace with real WHT jobs and photographs (Tab 10 template) -->
+                <!-- Photographs are real WHT work. The project write-ups below are still
+                     placeholders - replace them with real job details (Tab 10 template). -->
                 <div class="wht-projects">
 ${[
-            ['1558618666-fcd25c85cd64', 'Recurring Electrical Trips', 'fault'],
-            ['1508514177221-188b1cf16e9d', 'Backup Power Installation', 'solar'],
-            ['1600585154340-be6161a56a0c', 'Gate Motor Replacement', 'gate'],
-        ].map(([photo, h3, key]) => `                    <article class="wht-project">
+            ['fault', 'Recurring Electrical Trips', 'fault'],
+            ['backup', 'Backup Power Installation', 'solar'],
+            ['gate', 'Gate Motor Replacement', 'gate'],
+        ].map(([pic, h3, key]) => `                    <article class="wht-project">
                         <div class="wht-project__media">
-                            <img loading="lazy" decoding="async" width="500" height="333" src="${img(photo, 500)}" alt="">
+                            ${photo(pic)}
                         </div>
                         <div class="wht-project__body">
                             <span class="wht-project__loc">${ic('pin')} Example project</span>
@@ -352,6 +387,7 @@ ${ctaBand({
             ],
             cta: `${btn.quote()}\n                        ${btn.wa()}`,
         })}
+${photoFigure('dbboard', 'DB board work on a recent WHT job.')}
         <!-- Common problems -->
         <section class="wht-section" aria-labelledby="wht-problems-title">
             <div class="wht-container wht-grid-2 wht-grid-2--top">
@@ -682,6 +718,7 @@ ${ctaBand({
             ],
             cta: `${btn.quote('Request a Solar Assessment')}\n                        ${btn.wa('WhatsApp WHT', "Hi WHT Electrical, I'm planning solar or backup power and would like an assessment.")}`,
         })}
+${photoFigure('commercial', 'A commercial rooftop solar installation completed by WHT.')}
         <!-- Start with your power needs -->
         <section class="wht-section" aria-labelledby="wht-needs-title">
             <div class="wht-container wht-grid-2 wht-grid-2--top">
@@ -1153,6 +1190,126 @@ ${['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fenc
                         <p class="wht-form__status" id="wht-form-status" role="status" aria-live="polite"></p>
                     </form>
                 </div>
+            </div>
+        </section>
+`,
+    },
+
+    /* -------------------------------------------------------
+       PRIVACY POLICY   (/privacy-policy/)
+       DRAFT. Not from the Build Pack. Wayne must check every
+       statement and a legal adviser should review it.
+       ------------------------------------------------------- */
+    {
+        key: 'privacy',
+        label: 'Privacy Policy',
+        title: 'Privacy Policy | WHT Electrical',
+        description: 'How WHT Electrical collects, uses and protects the personal information you provide through this website.',
+        crumbs: [HOME, { key: 'privacy', label: 'Privacy Policy' }],
+        body: (page) => `${pageHero(page, {
+            h1: 'Privacy Policy',
+            lead: ['How WHT Electrical collects, uses and protects the personal information you give us through this website.'],
+        })}
+        <section class="wht-section">
+            <div class="wht-container wht-prose">
+                ${draftNotice()}
+                <p class="wht-note">Last updated: <span class="wht-confirm">[CONFIRM date before publishing]</span></p>
+
+                <h2>Who we are</h2>
+                <p>This website is operated by WHT Electrical, ${SITE.street}, ${SITE.suburb}, ${SITE.town}, ${SITE.region}. You can reach us on ${SITE.phone1} or ${SITE.phone2}, or at ${SITE.email}.</p>
+                <p>Our Information Officer, as required by the Protection of Personal Information Act, is <span class="wht-confirm">[CONFIRM name]</span>, contactable at ${SITE.email}.</p>
+
+                <h2>What we collect</h2>
+                <p>When you send an enquiry through this website we collect the details you type into the form: your name, your mobile number, your email address if you give one, your area or suburb, the service you select, what you tell us about the problem, and any photograph you choose to upload.</p>
+                <p>If you contact us by WhatsApp, phone or email instead, we hold whatever you send us in that message, along with your number or address.</p>
+                <p><span class="wht-confirm">[CONFIRM whether website analytics are installed.]</span> If they are, we also collect ordinary visit information such as the pages you view, roughly where you are, and which browser and device you use. This is used to understand how the website is found and used, not to identify you personally.</p>
+
+                <h2>Why we use it</h2>
+                <ul class="wht-list">
+                    <li>To reply to your enquiry and arrange a visit or a quote.</li>
+                    <li>To carry out the work you ask us to do.</li>
+                    <li>To keep records of work completed and any certificates issued.</li>
+                    <li>To meet obligations the law places on us, including those relating to electrical compliance and tax records.</li>
+                </ul>
+
+                <h2>Our lawful grounds</h2>
+                <p>We process your information because you have given it to us in order to be contacted, and because processing it is necessary to prepare or carry out work for you. You may withdraw your consent at any time, although we may still need to keep records of work already done.</p>
+
+                <h2>Who we share it with</h2>
+                <p>We do not sell your information and we do not share it for marketing. We share it only with the service providers who help us run the business, such as our website host and email provider, <span class="wht-confirm">[CONFIRM: analytics provider, form or CRM software]</span>, and with WhatsApp when you choose to message us there. We will also disclose information where the law requires it.</p>
+
+                <h2>Photographs you send us</h2>
+                <p>A photograph you upload or send is used to assess the work. <span class="wht-confirm">[CONFIRM whether photographs of completed work are used on the website or social media. If they are, say so here and state that identifiable property is only shown with permission.]</span></p>
+
+                <h2>How long we keep it</h2>
+                <p>Enquiries that do not lead to work are kept for <span class="wht-confirm">[CONFIRM period]</span>. Records of work carried out, and any certificate issued, are kept for as long as we need them for compliance, warranty and tax purposes.</p>
+
+                <h2>Keeping it safe</h2>
+                <p>We take reasonable steps to protect the information we hold. No website or email system is completely secure, so we cannot guarantee absolute security.</p>
+
+                <h2>Your rights</h2>
+                <p>You may ask us what personal information we hold about you, ask us to correct it, or ask us to delete it where we are not required to keep it. You may also object to how we use it. Write to ${SITE.email} and we will respond.</p>
+                <p>If you are not satisfied with our response, you may complain to the Information Regulator of South Africa. <span class="wht-confirm">[CONFIRM the Regulator's current contact details before publishing.]</span></p>
+
+                <h2>Changes to this notice</h2>
+                <p>If we change how we handle personal information we will update this page and change the date at the top.</p>
+
+                <h2>Contact us</h2>
+                <p>Any question about this notice can go to ${SITE.email}, or call ${SITE.phone1}.</p>
+            </div>
+        </section>
+`,
+    },
+
+    /* -------------------------------------------------------
+       TERMS   (/terms/)
+       DRAFT. Not from the Build Pack. Needs legal review.
+       ------------------------------------------------------- */
+    {
+        key: 'terms',
+        label: 'Terms',
+        title: 'Terms of Use | WHT Electrical',
+        description: 'The terms on which WHT Electrical makes this website available, and how quotes and enquiries work.',
+        crumbs: [HOME, { key: 'terms', label: 'Terms' }],
+        body: (page) => `${pageHero(page, {
+            h1: 'Terms of Use',
+            lead: ['The terms on which this website is made available, and how enquiries and quotes work.'],
+        })}
+        <section class="wht-section">
+            <div class="wht-container wht-prose">
+                ${draftNotice()}
+                <p class="wht-note">Last updated: <span class="wht-confirm">[CONFIRM date before publishing]</span></p>
+
+                <h2>About these terms</h2>
+                <p>This website is operated by WHT Electrical. By using it you accept these terms. If you do not accept them, please do not use the site.</p>
+
+                <h2>Information on this website</h2>
+                <p>The descriptions of our services are general information. They are not a quote, and they are not advice for your particular property. We may change what we offer, and the content of this site, without notice.</p>
+
+                <h2>Enquiries and quotes</h2>
+                <p>Sending an enquiry does not create a booking. Work is only arranged once we have confirmed it with you.</p>
+                <p>Any price we give follows an assessment of the actual work. A quote is binding only once we have issued it in writing and you have accepted it. <span class="wht-confirm">[CONFIRM how long a quote stays valid.]</span></p>
+
+                <h2>Certificates of compliance</h2>
+                <p>A certificate is issued only where the installation meets the applicable requirements at the time of inspection. Where remedial work is needed first, that work is quoted separately.</p>
+
+                <h2>Content on this site</h2>
+                <p>The text, images, logos and design of this website belong to WHT Electrical or to the people we licensed them from. Please do not copy or reuse them without our permission.</p>
+
+                <h2>Links to other websites</h2>
+                <p>Where we link to another website, we do not control it and we are not responsible for its content.</p>
+
+                <h2>Availability</h2>
+                <p>We try to keep the site available and accurate, but we cannot promise it will always be available or free of errors.</p>
+
+                <h2>Liability</h2>
+                <p>As far as the law allows, WHT Electrical is not liable for any loss arising from your use of this website. <span class="wht-confirm">[LEGAL REVIEW: this clause limits liability for the website only. It does not affect your rights in respect of work carried out, which are covered by the agreement for that work.]</span></p>
+
+                <h2>Governing law</h2>
+                <p>These terms are governed by the laws of South Africa.</p>
+
+                <h2>Contact us</h2>
+                <p>Questions about these terms can go to ${SITE.email}, or call ${SITE.phone1}.</p>
             </div>
         </section>
 `,

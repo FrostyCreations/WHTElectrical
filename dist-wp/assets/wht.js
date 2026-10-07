@@ -8,6 +8,22 @@
     var site = document.querySelector('.wht-site');
     if (!site) return;
 
+    /* ---------- Hero video ----------
+       6.5 MB is too much to send to a phone that cannot see it: below 1025px the
+       blue panel covers the whole hero, so the poster photograph is the picture.
+       Reduced-motion visitors keep the poster too. */
+    var heroVideo = site.querySelector('.wht-hero__video');
+    if (heroVideo && heroVideo.dataset.src &&
+        window.matchMedia('(min-width: 1025px)').matches &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        /* The autoplay attribute is on the element but inert until a src exists.
+           Setting it here is what starts playback, and it is also what lets the
+           browser resume by itself after the tab has been in the background. */
+        heroVideo.src = heroVideo.dataset.src;
+        var playing = heroVideo.play();
+        if (playing && playing.catch) playing.catch(function () { /* autoplay blocked: poster stays */ });
+    }
+
     /* ---------- Current year ---------- */
     var yr = site.querySelector('#wht-year');
     if (yr) yr.textContent = new Date().getFullYear();

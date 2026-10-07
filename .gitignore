@@ -6,3 +6,7 @@ node_modules/
 
 # Superseded single-page concept
 wht-electrical-improved.html
+
+# Local Claude Code tooling, not part of the site
+.claude/skills/
+skills-lock.json

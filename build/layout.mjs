@@ -1,9 +1,23 @@
+import { readFileSync } from 'node:fs';
+
 /* =========================================================
    WHT ELECTRICAL — shared layout
    Header, footer, drawer, icon sprite, structured data and the
    reusable section builders from Build Pack Tab 11.
    Edit here once; every page picks it up on the next build.
    ========================================================= */
+
+/* Header colour: 'white' (brand blue logo) or 'navy' (white logo). One word changes it. */
+export const HEADER = 'white';
+
+/* The logo is inlined so its colour follows CSS (the SVG uses currentColor). */
+const LOGO_SVG = readFileSync(new URL('../assets/img/wht-logo.svg', import.meta.url), 'utf8')
+    .replace(/\s*role="img"/, '')
+    .replace(/\s*aria-label="[^"]*"/, '')
+    .replace('<svg ', '<svg aria-hidden="true" focusable="false" ')
+    .replace(/\n\s*/g, ' ')
+    .trim();
+export const logo = () => LOGO_SVG;
 
 export const SITE = {
     name: 'WHT Electrical',
@@ -29,6 +43,8 @@ export const ROUTES = {
     maintenance: { file: 'property-maintenance.html',                    wp: '/property-maintenance/' },
     about:       { file: 'about.html',                                   wp: '/about/' },
     contact:     { file: 'contact.html',                                 wp: '/contact/' },
+    privacy:     { file: 'privacy-policy.html',                          wp: '/privacy-policy/' },
+    terms:       { file: 'terms.html',                                   wp: '/terms/' },
 };
 
 /* Set by build.mjs before rendering: false = clickable local files, true = WordPress permalinks. */
@@ -206,7 +222,7 @@ export const head = (page) => {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-${page.preload ? `    <link rel="preload" as="image" href="${page.preload}" fetchpriority="high">\n` : ''}    <link rel="stylesheet" href="${asset('wht.css')}">
+${page.preload ? `    <link rel="preload" as="image" href="${asset(page.preload)}" fetchpriority="high">\n` : ''}    <link rel="stylesheet" href="${asset('wht.css')}">
 
 ${blocks.join('\n')}
 </head>
@@ -232,12 +248,9 @@ export const header = (page) => `<div class="wht-site">
 
     ${sprite()}
 
-    <header class="wht-header" id="wht-top">
+    <header class="wht-header${HEADER === 'white' ? ' wht-header--white' : ''}" id="wht-top">
         <div class="wht-container wht-header__inner">
-            <a href="${href('home')}" class="wht-logo" aria-label="WHT Electrical — home">
-                ${ic('bolt')}
-                WHT <span>Electrical</span>
-            </a>
+            <a href="${href('home')}" class="wht-logo" aria-label="WHT Electrical — home">${logo()}</a>
 
             <ul class="wht-nav" role="list">
                 <li><a href="${href('home')}"${cur(page, 'home')}>Home</a></li>
@@ -382,7 +395,7 @@ export const footer = (page) => `    </main>
         <div class="wht-container">
             <div class="wht-footer__grid">
                 <div>
-                    <div class="wht-logo">${ic('bolt')} WHT <span>Electrical</span></div>
+                    <div class="wht-logo wht-logo--light">${logo()}</div>
                     <p class="wht-footer__tag">${SITE.tagline}</p>
                     <p>Electrical, solar, plumbing and property maintenance for residential, commercial and industrial clients.</p>
                     <div class="wht-socials">
@@ -402,8 +415,8 @@ ${SUB.map((s) => `                        <li><a href="${href(s.key)}">${s.label
                         <li><a href="${href('about')}">About</a></li>
                         <li><a href="${href('contact')}">Contact</a></li>
                         <li><a href="${href('contact')}" data-wht-event="quote_start">Request a Quote</a></li>
-                        <li><a href="/privacy-policy/">Privacy Policy</a></li>
-                        <li><a href="/terms/">Terms</a></li>
+                        <li><a href="${href('privacy')}">Privacy Policy</a></li>
+                        <li><a href="${href('terms')}">Terms</a></li>
                     </ul>
                 </nav>
                 <div>
@@ -440,7 +453,7 @@ ${SUB.map((s) => `                        <li><a href="${href(s.key)}">${s.label
     <div class="wht-overlay" data-drawer-close hidden></div>
     <div class="wht-drawer" id="wht-drawer" role="dialog" aria-modal="true" aria-label="Site menu" hidden>
         <div class="wht-drawer__head">
-            <span class="wht-logo">${ic('bolt')} WHT <span>Electrical</span></span>
+            <span class="wht-logo wht-logo--light">${logo()}</span>
             <button class="wht-drawer__close" type="button" aria-label="Close menu" data-drawer-close>
                 ${ic('close')}
             </button>

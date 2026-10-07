@@ -23,7 +23,7 @@
     --wht-radius: 6px;
     --wht-shadow: 0 6px 24px rgba(22, 35, 59, .10);
     --wht-shadow-lg: 0 20px 50px rgba(22, 35, 59, .18);
-    --wht-header-h: 78px;
+    --wht-header-h: 92px;
     --wht-font-head: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
     --wht-font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 
@@ -114,8 +114,8 @@
 .wht-header .wht-container { max-width: none; padding-right: 0; }
 .wht-header__inner { display: flex; align-items: center; gap: 20px; height: var(--wht-header-h); }
 .wht-logo { display: inline-flex; align-items: center; gap: 10px; font-family: var(--wht-font-head); font-weight: 800; font-size: 21px; color: #fff; white-space: nowrap; }
-.wht-logo svg { width: 28px; height: 28px; color: var(--wht-yellow); }
-.wht-logo span { color: var(--wht-yellow); }
+.wht-logo svg { color: inherit; }
+.wht-logo span { color: inherit; }
 
 .wht-nav { display: flex; align-items: center; gap: 28px; margin-left: auto; }
 .wht-nav > li { position: relative; }
@@ -204,10 +204,16 @@
     position: relative; color: #fff; overflow: hidden; isolation: isolate;
     background-color: var(--wht-navy-deep);
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 3.5vw));
-    --wht-bolt: polygon(0 0, 80% 0, 56% 48%, 72% 48%, 40% 100%, 0 100%);
+    /* Moved toward the middle so more of the hero video shows. Three constraints
+       fix the numbers: the top vertex is free (80% -> 68%, the big reveal); the
+       diagonal's lower end must stay at 56%, because at 1025px the copy column
+       reaches 50.5% and anything further left runs text over the video; and the
+       lower arm (66%/44%) has to stay right of the CTA buttons all the way down. */
+    --wht-bolt: polygon(0 0, 68% 0, 56% 48%, 66% 48%, 46% 100%, 0 100%);
 }
 .wht-hero__media { position: absolute; inset: 0; z-index: 0; }
-.wht-hero__media img { width: 100%; height: 100%; object-fit: cover; }
+.wht-hero__media img,
+.wht-hero__video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .wht-hero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(22,35,59,.55) 0%, rgba(22,35,59,.22) 50%, rgba(22,35,59,.05) 100%); }
 .wht-hero__panel {
     position: absolute; inset: 0; z-index: 1;
@@ -225,7 +231,7 @@
 .wht-hero__edge { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none; }
 .wht-hero__edge path {
     fill: none; stroke: var(--wht-yellow); stroke-width: 4; stroke-linejoin: miter; stroke-linecap: square;
-    d: path("M 80 0 L 56 48 L 72 48 L 40 100");
+    d: path("M 68 0 L 56 48 L 66 48 L 46 100");
 }
 /* padding-top/bottom only — a `padding` shorthand would wipe out .wht-container's side padding */
 .wht-hero__inner { position: relative; z-index: 3; padding-top: clamp(60px, 8vw, 100px); padding-bottom: clamp(84px, 11vw, 140px); }
@@ -498,9 +504,11 @@
     .wht-mobilebar { display: grid; }
     .wht-totop { bottom: 74px; }
     .wht-site { padding-bottom: 58px; } /* clear the sticky bar */
-    /* hero: no room for a bolt — the blue covers the photo as a flat panel */
+    /* hero: no room for a bolt — the blue covers the photo as a flat panel.
+       .86 lets the real job photograph read through as texture. White headline
+       over the brightest part of the photo still measures about 10:1. */
     .wht-hero { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 6vw)); }
-    .wht-hero__panel { clip-path: none; opacity: .94; }
+    .wht-hero__panel { clip-path: none; opacity: .86; }
     .wht-hero__edge { display: none; }
     .wht-hero__media::after { background: linear-gradient(180deg, rgba(30,47,77,.4), rgba(30,47,77,.7)); }
     .wht-hero__content { max-width: none; }
@@ -571,4 +579,73 @@
 
 @media (max-width: 680px) {
     .wht-steps--2 { grid-template-columns: 1fr; }
+}
+
+
+/* ---------- Legal pages ---------- */
+.wht-prose h2 { margin-top: 2rem; font-size: clamp(20px, 2.4vw, 26px); }
+.wht-prose h2:first-of-type { margin-top: 0; }
+.wht-list { list-style: disc; padding-left: 22px; margin: 0 0 1.25rem; }
+.wht-list li { margin-bottom: 8px; }
+.wht-confirm { color: #C62828; font-weight: 600; }
+/* Review banner. Delete the draftNotice() call in build/pages.mjs once approved. */
+.wht-draft { border: 2px dashed #C62828; background: #FBE9E7; border-radius: var(--wht-radius); padding: 18px 20px; margin-bottom: 30px; }
+.wht-draft strong { display: block; color: #C62828; font-family: var(--wht-font-head); margin-bottom: 6px; }
+.wht-draft p { margin: 0; font-size: 14.5px; }
+
+
+/* =========================================================
+   Logo and the white header variant
+   The logo SVG uses currentColor, so colour comes from CSS.
+   ========================================================= */
+.wht-logo { flex: none; display: inline-flex; align-items: center; }
+.wht-logo svg { height: 48px; width: auto; display: block; }
+.wht-logo--light { color: #fff; }
+.wht-logo--light svg { height: 40px; }
+
+.wht-header--white { background: #fff; border-bottom: 1px solid var(--wht-line); }
+.wht-header--white.is-stuck { box-shadow: 0 4px 18px rgba(22, 35, 59, .10); }
+.wht-header--white .wht-logo { color: var(--wht-blue); }
+.wht-header--white .wht-nav a,
+.wht-header--white .wht-nav__toggle { color: var(--wht-ink); }
+.wht-header--white .wht-nav a:hover,
+.wht-header--white .wht-nav__toggle:hover { color: var(--wht-blue); }
+.wht-header--white .wht-nav [aria-current="page"],
+.wht-header--white .wht-nav__toggle.is-section { color: var(--wht-blue); }
+.wht-header--white .wht-nav [aria-current="page"]::after,
+.wht-header--white .wht-nav__toggle.is-section::after { background: var(--wht-blue); }
+.wht-header--white .wht-header__phone { color: var(--wht-navy); }
+.wht-header--white .wht-header__phone svg { color: var(--wht-blue); }
+.wht-header--white .wht-search-toggle,
+.wht-header--white .wht-burger { color: var(--wht-navy); border-left-color: var(--wht-line); }
+.wht-header--white .wht-search-toggle:hover,
+.wht-header--white .wht-burger:hover { color: var(--wht-blue); }
+/* the yellow focus ring is for the dark bar; on white it needs the blue one */
+.wht-header--white :focus-visible { outline-color: var(--wht-blue); }
+
+@media (max-width: 1024px) {
+    .wht-site { --wht-header-h: 76px; }
+    .wht-logo svg { height: 38px; }
+    .wht-logo--light svg { height: 34px; }
+}
+
+/* =========================================================
+   Standalone photograph with a caption
+   ========================================================= */
+.wht-figure { margin: 0 auto; max-width: 760px; }
+.wht-figure img {
+    width: 100%;
+    /* 760px is under the 800px files, so the photo is never upscaled.
+       The 16:9 box keeps it from dominating the page the way 3:2 did. */
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--wht-radius);
+    box-shadow: var(--wht-shadow-lg);
+}
+.wht-figure figcaption {
+    margin-top: 14px;
+    font-size: 14.5px;
+    color: var(--wht-muted);
+    text-align: center;
 }
