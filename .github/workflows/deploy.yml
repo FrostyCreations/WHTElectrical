@@ -148,6 +148,38 @@ jobs:
           sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
             -oConnectTimeout=20 -P 22 -b /tmp/upload.sftp "$USER@$HOST"
 
+      # ---------------------------------------------------------------
+      # The site-chrome plugin. Elementor's Theme Builder needs Pro, which
+      # the site does not have, so the header and footer ship as a plain
+      # plugin instead. It carries the homepage template with it, so the
+      # import needs no file upload.
+      # ---------------------------------------------------------------
+      - name: Build the chrome plugin
+        run: |
+          node build/elementor/build.mjs
+          node build/elementor/plugin.mjs
+          test -f dist-plugin/wht-chrome/wht-chrome.php
+          test -f dist-plugin/wht-chrome/wht-home-launch.json
+          grep -c '<symbol' dist-plugin/wht-chrome/wht-chrome.php | xargs -I{} echo "  sprite symbols in plugin: {}"
+
+      - name: Upload the plugin over SFTP
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+        run: |
+          P=public_html/wp-content/plugins/wht-chrome
+          {
+            echo "-mkdir public_html/wp-content/plugins"
+            echo "-mkdir $P"
+            echo "put dist-plugin/wht-chrome/wht-chrome.php $P/"
+            echo "put dist-plugin/wht-chrome/wht-home-launch.json $P/"
+            echo "bye"
+          } > /tmp/plugin.sftp
+          cat /tmp/plugin.sftp
+          sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+            -oConnectTimeout=20 -P 22 -b /tmp/plugin.sftp "$USER@$HOST"
+
       - name: Verify over HTTP
         run: |
           fail=0

@@ -116,11 +116,103 @@ add_action('wp_footer', function () {
 ${footer}
 WHT_FOOTER_HTML;
 }, 5);
+
+/* ---------------------------------------------------------------
+   One-click homepage import.
+
+   Tools -> WHT Homepage. Imports the bundled Elementor template
+   through Elementor's own importer, builds a page from it, sets the
+   Elementor Canvas template and makes it the front page.
+
+   Doing it here rather than through Templates -> Import matters for
+   one reason: the header carries an inline SVG sprite of 37 icons, and
+   WordPress strips every <svg> from anyone without unfiltered_html.
+   This checks the capability up front and says so, instead of
+   importing successfully and silently losing every icon.
+   --------------------------------------------------------------- */
+add_action('admin_menu', function () {
+    add_management_page('WHT Homepage', 'WHT Homepage', 'manage_options', 'wht-homepage', 'wht_chrome_admin_page');
+});
+
+function wht_chrome_admin_page() {
+    if (!current_user_can('manage_options')) wp_die('Not allowed.');
+
+    $tpl_file = plugin_dir_path(__FILE__) . 'wht-home-launch.json';
+    echo '<div class="wrap"><h1>WHT Homepage</h1>';
+
+    if (isset($_POST['wht_do_import']) && check_admin_referer('wht_import')) {
+        echo '<div class="notice notice-info"><p>' . esc_html(wht_chrome_import($tpl_file)) . '</p></div>';
+    }
+
+    if (!did_action('elementor/loaded')) {
+        echo '<div class="notice notice-error"><p>Elementor is not active.</p></div></div>';
+        return;
+    }
+    if (!file_exists($tpl_file)) {
+        echo '<div class="notice notice-error"><p>Template file missing: ' . esc_html($tpl_file) . '</p></div></div>';
+        return;
+    }
+    if (!current_user_can('unfiltered_html')) {
+        echo '<div class="notice notice-warning"><p><strong>Warning:</strong> your user lacks the '
+           . '<code>unfiltered_html</code> capability. WordPress will strip the 37-icon SVG sprite '
+           . 'and every icon on the site will be invisible. On multisite only Super Admin has it; '
+           . 'some security plugins remove it. Fix that before importing.</p></div>';
+    }
+
+    echo '<p>Imports the homepage template, creates the page with the Elementor Canvas '
+       . 'layout and sets it as the front page. Safe to run again &mdash; it updates the same page.</p>';
+    echo '<form method="post">';
+    wp_nonce_field('wht_import');
+    submit_button('Import the homepage', 'primary', 'wht_do_import');
+    echo '</form></div>';
+}
+
+function wht_chrome_import($file) {
+    $res = \\Elementor\\Plugin::$instance->templates_manager->import_template([
+        'fileData' => base64_encode(file_get_contents($file)),
+        'fileName' => basename($file),
+    ]);
+    if (is_wp_error($res)) return 'Import failed: ' . $res->get_error_message();
+
+    $tpl = is_array($res) && isset($res[0]['template_id']) ? $res[0]['template_id'] : null;
+    if (!$tpl) return 'Import returned no template id.';
+    $data = get_post_meta($tpl, '_elementor_data', true);
+
+    /* Reuse the page if this has been run before, so repeated runs do not
+       leave a trail of duplicate home pages. */
+    $existing = get_page_by_path('home');
+    $page = $existing ? $existing->ID : wp_insert_post([
+        'post_title'  => 'Home',
+        'post_name'   => 'home',
+        'post_status' => 'publish',
+        'post_type'   => 'page',
+    ]);
+
+    update_post_meta($page, '_elementor_data', wp_slash($data));
+    update_post_meta($page, '_elementor_edit_mode', 'builder');
+    update_post_meta($page, '_wp_page_template', 'elementor_canvas');
+    if (defined('ELEMENTOR_VERSION')) update_post_meta($page, '_elementor_version', ELEMENTOR_VERSION);
+
+    update_option('show_on_front', 'page');
+    update_option('page_on_front', $page);
+
+    \\Elementor\\Plugin::$instance->files_manager->clear_cache();
+
+    $svg = substr_count((string) $data, '<svg');
+    return sprintf(
+        'Imported. Template #%d, page #%d, now the front page. %d SVG elements survived%s',
+        $tpl, $page, $svg,
+        $svg ? '.' : ' - that is the unfiltered_html problem; fix the capability and run again.'
+    );
+}
 `;
 
 const outDir = join(root, 'dist-plugin', 'wht-chrome');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'wht-chrome.php'), php);
+/* The template travels inside the plugin, so the import needs no file upload. */
+writeFileSync(join(outDir, 'wht-home-launch.json'),
+    readFileSync(join(root, 'dist-elementor', 'wht-home-launch.json'), 'utf8'));
 
 const count = (s, re) => (s.match(re) || []).length;
 console.log('wrote dist-plugin/wht-chrome/wht-chrome.php\n');
