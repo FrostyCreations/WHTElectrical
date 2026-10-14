@@ -74,7 +74,14 @@ const waBtn = () =>
         { cls: 'wht-btn wht-btn--wa', external: true, label: 'WhatsApp WHT' });
 
 /* ---------- the page ---------- */
-export const build = () => [
+/* Recent Work and Reviews still hold placeholder scaffolding: three cards
+   reading "Replace with what the client was experiencing", and three
+   five-star reviews reading "Placeholder - paste a genuine Google review".
+   Fine on a staging site, not fine on a homepage customers and Google see.
+   build.mjs emits both: the full template, and a launch template with those
+   two sections omitted so nothing fake can ship. Put them back the moment
+   Wayne supplies the real job details and the real Google reviews. */
+export const build = ({ placeholders = true } = {}) => [
 
     /* SECTION 2 — HERO. The backdrop is one HTML widget so the clip-path,
        the SVG stroke and the video stay byte-identical to the static build. */
@@ -224,6 +231,8 @@ export const build = () => [
             { cls: 'wht-markets-note', label: 'Markets note' }),
     ]),
 
+    ...(placeholders ? [
+
     /* SECTION 10 — RECENT WORK.
        Photographs are real WHT jobs; the write-ups are still placeholders
        and need real job details before launch (Tab 10 template). */
@@ -267,6 +276,8 @@ export const build = () => [
                 html('<figcaption>Reviewer name<span>Google review</span></figcaption>', { label: 'Reviewer — REPLACE' }),
             ]))),
     ]),
+
+    ] : []),
 
     /* SECTION 12 — FAQs. Elementor's Nested Accordion emits the FAQ schema
        itself, so the hand-written FAQPage JSON-LD is no longer needed here. */

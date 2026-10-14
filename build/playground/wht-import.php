@@ -106,6 +106,7 @@ add_action('init', function () {
     $files = [
         'wht-home.json'    => ['title' => 'Home',    'slug' => 'home',    'front' => true],
         'wht-contact.json' => ['title' => 'Contact', 'slug' => 'contact', 'front' => false],
+        'wht-home-launch.json' => ['title' => 'Home (launch)', 'slug' => 'home-launch', 'front' => false],
         'wht-header.json'  => ['chrome' => true],
         'wht-footer.json'  => ['chrome' => true],
     ];
