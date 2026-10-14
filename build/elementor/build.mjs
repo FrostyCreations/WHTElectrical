@@ -26,6 +26,13 @@ const PAGES = [
     { slug: 'contact', module: './contact.mjs' },
 ];
 
+/* Theme Builder templates. Elementor keys these off the template `type`,
+   so they land under Templates -> Theme Builder rather than Saved Templates. */
+const CHROME = [
+    { slug: 'header', build: 'buildHeader', title: 'headerTitle', type: 'headerType' },
+    { slug: 'footer', build: 'buildFooter', title: 'footerTitle', type: 'footerType' },
+];
+
 const census = (content) => {
     const n = {};
     (function walk(els) {
@@ -35,6 +42,7 @@ const census = (content) => {
 };
 
 let failed = false;
+const built = {};
 
 for (const { slug, module } of PAGES) {
     let page;
@@ -45,6 +53,7 @@ for (const { slug, module } of PAGES) {
        every id in every file and the diffs stay readable. */
     resetIds(`wht-${slug}`);
     const content = page.build();
+    built[slug] = content;
 
     const template = { content, page_settings: {}, version: '0.4', title: page.title, type: 'page' };
     writeFileSync(join(outDir, `wht-${slug}.json`), JSON.stringify(template, null, 2));
@@ -63,6 +72,29 @@ for (const { slug, module } of PAGES) {
         .filter(([k]) => k !== 'container' && k !== 'html')
         .reduce((n, [, v]) => n + v, 0);
     console.log(`  ${slug.padEnd(10)} ${String(editable).padStart(3)} editable widgets, ${c.html || 0} html, ${c.container || 0} containers`);
+}
+
+/* ---------- header and footer ---------- */
+const chrome = await import('./chrome.mjs');
+for (const c of CHROME) {
+    resetIds(`wht-${c.slug}`);
+    const content = chrome[c.build]();
+    built[c.slug] = content;
+    writeFileSync(join(outDir, `wht-${c.slug}.json`), JSON.stringify({
+        content, page_settings: {}, version: '0.4',
+        title: chrome[c.title], type: chrome[c.type],
+    }, null, 2));
+    const c2 = census(content);
+    console.log(`  ${c.slug.padEnd(10)} ${String(c2.html || 0).padStart(3)} html widget(s)  → Theme Builder (${chrome[c.type]})`);
+}
+
+/* A full-page simulation: header + page + footer, which is what the live page
+   actually is. Checking the page on its own would miss the chrome entirely. */
+for (const slug of ['home', 'contact']) {
+    if (!built[slug] || !built.header || !built.footer) continue;
+    const whole = [...built.header, ...built[slug], ...built.footer];
+    writeFileSync(join(root, `_elementor-sim-full-${slug}.html`), renderPage(whole, `full ${slug}`));
+    console.log(`  full-${slug.padEnd(6)} header + page + footer`);
 }
 
 console.log(`\n→ dist-elementor/*.json   (Elementor → Templates → Import)`);

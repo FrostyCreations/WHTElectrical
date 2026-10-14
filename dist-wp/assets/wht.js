@@ -26,6 +26,23 @@
         if (playing && playing.catch) playing.catch(function () { /* autoplay blocked: poster stays */ });
     }
 
+    /* ---------- Current page marker ----------
+       The static build bakes aria-current into each page. One shared
+       Elementor header template cannot, so it is set from the URL here.
+       Guarded: if the markup already carries the marker (the static
+       build), this does nothing. */
+    if (!site.querySelector('[aria-current="page"]')) {
+        var trimSlash = function (s) { return s.replace(/\/+$/, '') || '/'; };
+        var here = trimSlash(location.pathname);
+        site.querySelectorAll('.wht-nav a[href], .wht-drawer__nav a[href]').forEach(function (a) {
+            var path = trimSlash(a.getAttribute('href').split('#')[0]);
+            if (path === here) a.setAttribute('aria-current', 'page');
+        });
+        /* Services is a parent of /electrical/..., so mark it as the section. */
+        var svc = site.querySelector('.wht-nav__toggle');
+        if (svc && here.indexOf('/electrical') === 0) svc.classList.add('is-section');
+    }
+
     /* ---------- Current year ---------- */
     var yr = site.querySelector('#wht-year');
     if (yr) yr.textContent = new Date().getFullYear();

@@ -73,7 +73,9 @@
    carries the type. Zero the paragraph's own margin so the two
    do not add up.
    --------------------------------------------------------- */
-.wht-site .elementor-widget-text-editor > .elementor-widget-container > p:last-child { margin-bottom: 0; }
+/* Removed: zeroing the last paragraph is an Elementor convention, but these
+   widgets carry no margin of their own, so it just deleted the spacing that
+   wht.css gives every <p> and made every card shorter than the HTML build. */
 
 /* These reproduce how the static build ACTUALLY renders, which is not what
    wht.css appears to say. In wht.css, `.wht-hero p` (0,1,1) outranks
@@ -142,3 +144,103 @@
        .wht-hero p.wht-hero__base { ... }
    then drop the two overrides above. Both builds change together.
    ========================================================= */
+
+/* ---------------------------------------------------------
+   5. Headings inside Elementor's wrapper
+   wht.css sizes headings with classes on the element itself
+   (.wht-title) and with em-based element defaults. Elementor puts
+   the class on the wrapper, so the inner heading applies the em
+   default to the wrapper's size and comes out ~1.5x too big.
+   Making the inner heading 1em hands sizing back to the class.
+   --------------------------------------------------------- */
+/* Scoped to wrappers that actually carry a WHT sizing class. Applying it
+   to every heading also caught bare <h1>/<h2>, whose size comes from
+   wht.css element rules, and collapsed the page-hero H1 to 16px. */
+.wht-site .elementor-widget-heading.wht-title .elementor-heading-title,
+.wht-site .elementor-widget-heading.wht-eyebrow .elementor-heading-title,
+.wht-site .elementor-widget-heading.wht-form__title .elementor-heading-title { font-size: 1em; }
+
+/* ---------------------------------------------------------
+   6. Grid layouts
+   Elementor's .e-con sets display:flex on every container, which
+   silently flattens the CSS grids wht.css relies on. The column
+   definitions still come from wht.css; only `display` needs
+   restating, at a specificity that beats .e-con.
+   --------------------------------------------------------- */
+.wht-site .e-con.wht-contact-grid,
+.wht-site .e-con.wht-grid-2,
+.wht-site .e-con.wht-services,
+.wht-site .e-con.wht-projects,
+.wht-site .e-con.wht-reviews,
+.wht-site .e-con.wht-slist,
+.wht-site .e-con.wht-related,
+.wht-site .e-con.wht-markets,
+.wht-site .e-con.wht-problems,
+.wht-site .e-con.wht-callout,
+.wht-site .e-con.wht-steps,
+.wht-site .e-con.wht-trustbar ul { display: grid; }
+
+/* ---------------------------------------------------------
+   7. FAQ accordion
+   The static build uses <details class="wht-faq">. Elementor's
+   Nested Accordion renders <details class="e-n-accordion-item">
+   with its own summary structure, so none of the .wht-faq rules
+   reach it. These re-aim the same values at Elementor's markup.
+   Worth the swap: the Nested Accordion emits FAQ schema itself and
+   each answer stays an editable Text Editor.
+   --------------------------------------------------------- */
+.wht-site .wht-faqs .e-n-accordion-item {
+    border: 1px solid var(--wht-line);
+    border-radius: var(--wht-radius);
+    background: #fff;
+    margin-bottom: 12px;
+}
+.wht-site .wht-faqs .e-n-accordion-item[open] {
+    border-color: #C3D0E4;
+    box-shadow: var(--wht-shadow);
+}
+.wht-site .wht-faqs .e-n-accordion-item-title {
+    list-style: none; cursor: pointer; padding: 20px 24px; display: flex; align-items: center;
+    justify-content: space-between; gap: 18px; font-family: var(--wht-font-head); font-weight: 700;
+    font-size: 16.5px; color: var(--wht-navy);
+}
+.wht-site .wht-faqs .e-n-accordion-item-title::-webkit-details-marker { display: none; }
+.wht-site .wht-faqs .e-n-accordion-item-title::after {
+    content: ""; flex: none; width: 12px; height: 12px; border-right: 2.5px solid var(--wht-blue);
+    border-bottom: 2.5px solid var(--wht-blue); transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform .2s ease;
+}
+.wht-site .wht-faqs .e-n-accordion-item[open] .e-n-accordion-item-title::after {
+    transform: rotate(225deg) translate(-3px, -3px);
+}
+/* The answer container Elementor nests inside each item. */
+.wht-site .wht-faqs .e-n-accordion-item > .e-con { padding: 0 24px 22px; }
+.wht-site .wht-faqs .e-n-accordion-item p { margin: 0; color: var(--wht-muted); }
+.wht-site .wht-faqs .e-n-accordion-item p + p { margin-top: 12px; }
+
+/* ---------------------------------------------------------
+   8. Restoring the element defaults Elementor overrides
+   wht.css declares its heading and paragraph margins inside
+   :where(), which carries zero specificity so any .wht-* rule
+   wins without !important. Elementor's own
+   .elementor-heading-title { margin: 0 } therefore beats it, and
+   every heading loses its bottom margin — which is why the cards,
+   steps and callouts all came out slightly short.
+
+   These restate the defaults at the SAME zero specificity, so
+   component rules like .wht-hero h1 (margin-bottom: 18px) still
+   win. Raising the specificity here instead would silently
+   flatten the hero and page-hero spacing.
+   --------------------------------------------------------- */
+.wht-site :where(.elementor-widget-heading .elementor-heading-title) { margin: 0 0 .6em; line-height: 1.15; }
+.wht-site :where(.elementor-widget-text-editor > .elementor-widget-container > p) { margin: 0 0 1.25rem; }
+
+/* ---------------------------------------------------------
+   9. Containing the heading margin
+   Elementor's .elementor-widget-container is a plain block with no
+   padding or border, so the heading's bottom margin collapses straight
+   out of it and adds no height. The card looks tight and the whole
+   page comes up short. flow-root makes the wrapper contain its
+   children's margins without changing anything else about it.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-container { display: flow-root; }

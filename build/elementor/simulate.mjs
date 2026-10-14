@@ -170,6 +170,10 @@ const ELEMENTOR_BASE = `
 
 export function renderPage(content, title) {
     const body = content.map(render).join('\n');
+    /* The header template carries the sprite itself. Inject it only when the
+       content has none, or a full-page simulation ends up with two sets of
+       the same symbol ids. */
+    const needsSprite = !body.includes('<symbol');
     return `<!DOCTYPE html>
 <html lang="en-ZA">
 <head>
@@ -186,7 +190,7 @@ export function renderPage(content, title) {
 <style>${generatedCss(content)}</style>
 </head>
 <body class="wht-site">
-${sprite()}
+${needsSprite ? sprite() : ''}
 ${body}
 <script src="/assets/wht.js" defer></script>
 </body>

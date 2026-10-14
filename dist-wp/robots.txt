@@ -1,3 +1,4 @@
-# Client review deployment - not the live WHT Electrical website.
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://whtelectrical.co.za/sitemap.xml
