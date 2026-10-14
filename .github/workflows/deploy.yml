@@ -74,20 +74,79 @@ jobs:
           echo "size:  $(du -sh dist-wp/assets | cut -f1)"
           find dist-wp/assets -type f -printf '  %P\n' | sort
 
-      - name: Upload over SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
-        with:
-          server: ${{ secrets.XNEELO_FTP_SERVER }}
-          username: ${{ secrets.XNEELO_FTP_USERNAME }}
-          password: ${{ secrets.XNEELO_FTP_PASSWORD }}
-          port: 22
-          local_path: './dist-wp/assets/*'
-          remote_path: ${{ env.REMOTE_DIR }}
-          sftp_only: true
-          # Never delete on the remote. If something is removed from the
-          # repo it is cleaned up by hand, so a bad run cannot wipe the
-          # live site's assets.
-          delete_remote_files: false
+      # ---------------------------------------------------------------
+      # Are the secrets even there? An empty secret makes the upload fail
+      # with an opaque connection error, which is a slow way to discover
+      # a typo in a secret name. Values are never printed, only lengths.
+      # ---------------------------------------------------------------
+      - name: Check the secrets exist
+        env:
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+          PASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+        run: |
+          miss=0
+          for n in HOST USER PASS; do
+            v="${!n}"
+            if [ -z "$v" ]; then echo "  $n: MISSING"; miss=1; else echo "  $n: set (${#v} chars)"; fi
+          done
+          [ "$miss" = "0" ] || {
+            echo "::error::One or more secrets are empty. Add XNEELO_FTP_SERVER, XNEELO_FTP_USERNAME and XNEELO_FTP_PASSWORD under Settings -> Secrets and variables -> Actions. Names are case-sensitive."
+            exit 1
+          }
+
+      - name: Install sshpass
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+
+      # ---------------------------------------------------------------
+      # Connect and report. Port 22 answers "SSH-2.0-FTP Service", which
+      # looks like an SFTP-only jail - no shell, so no rsync and no
+      # remote commands. Plain sftp batch mode is what such a service
+      # supports, and unlike the action it prints a real error.
+      # ---------------------------------------------------------------
+      - name: Test the SFTP connection
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+        run: |
+          printf 'pwd\nls\nbye\n' > /tmp/probe.sftp
+          set +e
+          out=$(sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+                -oConnectTimeout=20 -P 22 -b /tmp/probe.sftp "$USER@$HOST" 2>&1)
+          rc=$?
+          set -e
+          echo "$out"
+          if [ $rc -ne 0 ]; then
+            echo "::error::SFTP login failed (exit $rc). Common causes: wrong username or password; the FTP user has no SSH/SFTP access on xneelo; or the host should be the server IP rather than ftp.whtelectrical.co.za."
+            exit $rc
+          fi
+          echo "Login OK. The listing above is the FTP user's home - check whether public_html is inside it."
+
+      # ---------------------------------------------------------------
+      # Upload. Directories are created first and failures on mkdir are
+      # ignored with the leading "-", because sftp batch aborts on any
+      # error and mkdir fails when the directory already exists.
+      # ---------------------------------------------------------------
+      - name: Upload assets over SFTP
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+          REMOTE: ${{ env.REMOTE_DIR }}
+        run: |
+          R="${REMOTE%/}"
+          {
+            echo "-mkdir $R"
+            for d in img photos video; do echo "-mkdir $R/$d"; done
+            echo "put dist-wp/assets/*.css $R/"
+            echo "put dist-wp/assets/*.js  $R/"
+            for d in img photos video; do echo "put dist-wp/assets/$d/* $R/$d/"; done
+            echo "bye"
+          } > /tmp/upload.sftp
+          echo "--- batch ---"; cat /tmp/upload.sftp; echo "-------------"
+          sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+            -oConnectTimeout=20 -P 22 -b /tmp/upload.sftp "$USER@$HOST"
 
       - name: Verify over HTTP
         run: |
