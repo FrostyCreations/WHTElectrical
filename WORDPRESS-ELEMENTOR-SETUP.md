@@ -1,6 +1,6 @@
 # WHT Electrical — site build notes
 
-The full 10-page launch site from the **WHT Website Build Pack**: Tab 2 sitemap, Tab 3
+The 12-page launch site (10 from the Build Pack, plus drafted Privacy Policy and Terms) from the **WHT Website Build Pack**: Tab 2 sitemap, Tab 3
 homepage wireframe, Tab 4 page templates, Tab 5 approved copy, Tab 8 CTAs and form,
 Tab 9 visual direction, Tab 11 technical requirements.
 
@@ -16,7 +16,13 @@ build/layout.mjs                      ← header, footer, drawer, icons, schema,
 build/pages.mjs                       ← every page's copy and section order
 build/build.mjs                       ← generator + verifier
 build/serve.mjs                       ← local preview server (no dependencies)
-dist-wp/                              ← same 10 pages with real WordPress permalinks
+assets/photos/                        ← 10 real WHT job photographs, web-sized
+assets/img/                           ← the vector logo (SVG + PNG fallback)
+assets/video/wht-hero.mp4             ← homepage hero video
+build/process-photos.ps1              ← prepares photographs for the web
+build/package-handoff.mjs             ← builds the developer hand-off package
+build/handoff-guide.md                ← the xneelo + WordPress step-by-step
+dist-wp/                              ← same 12 pages with real WordPress permalinks
 wht-electrical-improved.html          ← earlier single-page concept — superseded, safe to delete
 ```
 
@@ -40,6 +46,8 @@ and contact details exist in exactly one place, so they cannot drift between pag
 | Property Maintenance | `property-maintenance.html` | `/property-maintenance/` | Service Pillar |
 | About WHT | `about.html` | `/about/` | Standard Content |
 | Contact | `contact.html` | `/contact/` | Standard Content |
+| Privacy Policy | `privacy-policy.html` | `/privacy-policy/` | Standard Content (draft) |
+| Terms | `terms.html` | `/terms/` | Standard Content (draft) |
 
 Each page carries its Tab 5 SEO title and meta description, a canonical URL, and
 structured data: LocalBusiness (sitewide), BreadcrumbList, Service (service pages) and
@@ -140,7 +148,7 @@ homepage had Quote in the middle.
 
 | Item | Where | Notes |
 |---|---|---|
-| **All photography** | homepage hero, service and project cards | Unsplash placeholders. Tab 9: real technicians, DB boards, solar, inverters, gate motors, fencing, plumbing, branded vehicles. Update the alt text to describe the real photo. |
+| ~~All photography~~ | — | **Done.** 10 real WHT job photographs are in `assets/photos`, with alt text describing each frame. See `assets/photos/README.md`. |
 | **Photos of Wayne / early WHT** | About page | Shown as clearly-marked dashed placeholders — deliberately *not* stock photos of a stranger presented as the founder. |
 | **Genuine Google reviews** | homepage Reviews | Tab 5: real reviews only, wording unchanged. Then add `aggregateRating` to the business schema in `layout.mjs`. |
 | **Three real projects** | homepage Recent Work | Tab 10 template: location, problem, work completed, linked service. |
@@ -148,7 +156,7 @@ homepage had Quote in the middle.
 | **Social profile URLs** | footer | `REPLACE` placeholders. Delete the icons if WHT has none. |
 | **Geo coordinates** | business schema | Improves map and local results. |
 | **OG share image** | `/assets/og-image.jpg` | 1200×630. |
-| **Privacy Policy & Terms pages** | footer links | Not in the 10-page build; the links are placeholders and currently 404. |
+| **Privacy Policy & Terms** | `/privacy-policy/`, `/terms/` | Pages now exist and the footer links work, but both are **drafts** carrying a red banner and `[CONFIRM]` markers. Wayne and ideally a lawyer must sign them off, then delete the `draftNotice()` calls in `build/pages.mjs`. |
 
 ---
 
@@ -204,12 +212,12 @@ Still to install: GA4, GTM, Search Console, Bing Webmaster Tools.
 
 ## Design mechanics worth knowing
 
-**Homepage bolt.** Four layers: photo → blue panel clipped to the bolt → SVG stroke tracing
-its edge in yellow → copy. To reshape it, edit **both** of these in `assets/wht.css`:
+**Homepage bolt.** Four layers: video (poster photo below 861px) → blue panel clipped to the
+bolt → SVG stroke tracing its edge in yellow → copy. To reshape it, edit **both** of these in `assets/wht.css`:
 
 ```css
-.wht-hero { --wht-bolt: polygon(0 0, 80% 0, 56% 48%, 72% 48%, 40% 100%, 0 100%); }
-.wht-hero__edge path { d: path("M 80 0 L 56 48 L 72 48 L 40 100"); }
+.wht-hero { --wht-bolt: polygon(0 0, 68% 0, 56% 48%, 66% 48%, 46% 100%, 0 100%); }
+.wht-hero__edge path { d: path("M 68 0 L 56 48 L 66 48 L 46 100"); }
 ```
 
 The yellow edge is a real SVG stroke rather than an offset copy of the panel. An offset

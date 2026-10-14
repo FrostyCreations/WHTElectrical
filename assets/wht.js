@@ -9,12 +9,14 @@
     if (!site) return;
 
     /* ---------- Hero video ----------
-       6.5 MB is too much to send to a phone that cannot see it: below 1025px the
-       blue panel covers the whole hero, so the poster photograph is the picture.
-       Reduced-motion visitors keep the poster too. */
+       6.5 MB is too much to send to a device that cannot see it. At 860px and
+       below, wht.css drops the bolt clip-path and lays the blue panel flat over
+       the whole hero, so only the poster photograph shows through — that is the
+       breakpoint this must match. If the hero breakpoint in the stylesheet moves,
+       move this with it. Reduced-motion visitors keep the poster too. */
     var heroVideo = site.querySelector('.wht-hero__video');
     if (heroVideo && heroVideo.dataset.src &&
-        window.matchMedia('(min-width: 1025px)').matches &&
+        window.matchMedia('(min-width: 861px)').matches &&
         !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         /* The autoplay attribute is on the element but inert until a src exists.
            Setting it here is what starts playback, and it is also what lets the

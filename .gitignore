@@ -10,3 +10,9 @@ wht-electrical-improved.html
 # Local Claude Code tooling, not part of the site
 .claude/skills/
 skills-lock.json
+
+# Generated output, rebuilt on demand
+handoff/
+standalone/
+_elementor-sim*.html
+dist-elementor/

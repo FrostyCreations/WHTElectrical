@@ -26,7 +26,11 @@ export const SITE = {
     phone2: '083 952 2925', tel2: '+27839522925',
     wa: '27833061267',
     email: 'info@whtelectrical.co.za',
-    domain: 'https://www.whtelectrical.co.za',
+    /* No www. The existing live site is served from the bare domain and that is
+       what Google has indexed, so the replacement keeps the same hostname —
+       changing the content and the hostname in one go is two risks, not one.
+       If WHT ever moves to www, change this AND add a 301 from the bare domain. */
+    domain: 'https://whtelectrical.co.za',
     street: '32 Webb Street', suburb: 'Northmead', town: 'Benoni', region: 'Gauteng',
     founded: '2010',
 };
@@ -47,8 +51,11 @@ export const ROUTES = {
     terms:       { file: 'terms.html',                                   wp: '/terms/' },
 };
 
-/* Set by build.mjs before rendering: false = clickable local files, true = WordPress permalinks. */
-export const MODE = { wp: false };
+/* Set by build.mjs before rendering.
+   wp:   false = clickable local files, true = WordPress permalinks.
+   prod: false = review build (noindex robots.txt, review 404),
+         true  = the real site (indexable robots.txt, sitemap, real 404). */
+export const MODE = { wp: false, prod: false };
 
 export const href = (key, hash = '') => {
     const r = ROUTES[key];

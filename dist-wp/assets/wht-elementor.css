@@ -1,0 +1,144 @@
+/* =========================================================
+   WHT ELECTRICAL — Elementor bridge
+   Load AFTER wht.css, only on the WordPress build.
+
+   Elementor puts a widget's CSS classes on its outer wrapper, not on
+   the <h1>, <p> or <a> inside it. Most of wht.css survives that because
+   it uses descendant selectors, but three things do not:
+
+     1. buttons  — the real link is <a class="elementor-button">, two
+                   levels inside the element carrying .wht-btn
+     2. text     — .wht-hero__q / .wht-hero__base land on the wrapper,
+                   while the <p> inside picks up the generic .wht-hero p
+     3. margins  — Elementor's own reset zeroes the last <p>
+
+   Nothing here is a new design. Every value is the one already in
+   wht.css; this only re-aims it at the element Elementor actually
+   renders. If a value changes in wht.css, change it here too.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   1. Buttons
+   Neutralise the wrapper that carries .wht-btn, then put the
+   button look on the <a> Elementor generates inside it.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-button.wht-btn {
+    background: none;
+    border: 0;
+    padding: 0;
+    min-height: 0;
+    display: inline-flex;
+}
+.wht-site .elementor-widget-button.wht-btn .elementor-button-wrapper { display: inline-flex; }
+
+.wht-site .elementor-widget-button.wht-btn .elementor-button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 15px 30px; font-weight: 700; font-size: 15px; border: 2px solid transparent;
+    border-radius: var(--wht-radius); cursor: pointer; line-height: 1; text-align: center;
+    min-height: 52px; text-decoration: none;
+    transition: color .2s ease, background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.wht-site .elementor-widget-button.wht-btn--primary .elementor-button {
+    background: var(--wht-yellow); color: #1a1a1a; border-color: var(--wht-yellow);
+}
+.wht-site .elementor-widget-button.wht-btn--primary .elementor-button:hover {
+    background: var(--wht-navy); border-color: var(--wht-navy); color: #fff; transform: translateY(-2px);
+}
+
+.wht-site .elementor-widget-button.wht-btn--wa .elementor-button {
+    background: #25D366; color: #06301a; border-color: #25D366;
+}
+.wht-site .elementor-widget-button.wht-btn--wa .elementor-button:hover {
+    background: #1ba851; border-color: #1ba851; transform: translateY(-2px);
+}
+
+.wht-site .elementor-widget-button.wht-btn--ghost .elementor-button {
+    background: transparent; color: var(--wht-navy); border-color: #C3CDDC;
+}
+.wht-site .elementor-widget-button.wht-btn--ghost .elementor-button:hover {
+    background: var(--wht-navy); border-color: var(--wht-navy); color: #fff; transform: translateY(-2px);
+}
+
+.wht-site .elementor-widget-button.wht-btn--ondark .elementor-button {
+    background: transparent; color: #fff; border-color: rgba(255, 255, 255, .5);
+}
+.wht-site .elementor-widget-button.wht-btn--ondark .elementor-button:hover {
+    background: #fff; color: var(--wht-navy); border-color: #fff; transform: translateY(-2px);
+}
+
+/* ---------------------------------------------------------
+   2. Text editors
+   The wrapper carries the class and the spacing; the <p> inside
+   carries the type. Zero the paragraph's own margin so the two
+   do not add up.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-text-editor > .elementor-widget-container > p:last-child { margin-bottom: 0; }
+
+/* These reproduce how the static build ACTUALLY renders, which is not what
+   wht.css appears to say. In wht.css, `.wht-hero p` (0,1,1) outranks
+   `.wht-hero__q` and `.wht-hero__base` (0,1,0), so the question line and the
+   location line both lose their colour and size to the generic paragraph
+   rule — only font-weight on the question line survives.
+   Matching the live rendering is deliberate: the brief is that the hero looks
+   the same. See the note at the bottom of this file about fixing it properly. */
+.wht-site .wht-hero .elementor-widget-text-editor { margin-bottom: 12px; }
+.wht-site .wht-hero .elementor-widget-text-editor p {
+    color: #DEE5F2; font-size: clamp(15px, 1.5vw, 17px); margin-bottom: 0;
+}
+
+.wht-site .wht-hero .elementor-widget-text-editor.wht-hero__q { margin-bottom: 14px; }
+.wht-site .wht-hero .elementor-widget-text-editor.wht-hero__q p { font-weight: 600; }
+
+.wht-site .wht-hero .elementor-widget-text-editor.wht-hero__base { margin-bottom: 30px; }
+
+/* ---------------------------------------------------------
+   3. Headings
+   .wht-hero h1 already matches through the wrapper. The brandline
+   is a <span> whose class sits on the wrapper, so the inherited
+   properties need restating on the element Elementor renders.
+   --------------------------------------------------------- */
+/* No line-height rule here: .wht-hero h1 in wht.css is a descendant selector,
+   so it already beats Elementor's .elementor-heading-title. An earlier
+   line-height:inherit here made the headline inherit the container's 1.5. */
+
+.wht-site .elementor-widget-heading.wht-hero__brandline { margin-bottom: 18px; }
+.wht-site .elementor-widget-heading.wht-hero__brandline .elementor-heading-title {
+    display: block; color: var(--wht-yellow); font-family: var(--wht-font-head); font-weight: 700;
+    text-transform: uppercase; letter-spacing: .16em; font-size: clamp(12px, 1.2vw, 14px);
+}
+
+/* ---------------------------------------------------------
+   4. Containers
+   Elementor containers are flex columns by default and add their own
+   gap. The hero copy column relies on each child's own margin instead.
+   --------------------------------------------------------- */
+.wht-site .wht-hero__content.e-con { gap: 0; }
+.wht-site .wht-hero__cta.e-con { gap: 14px; flex-direction: row; flex-wrap: wrap; }
+
+@media (max-width: 860px) {
+    .wht-site .wht-hero__cta.e-con .elementor-widget-button { flex: 1 1 240px; }
+}
+
+/* ---------------------------------------------------------
+   Brandline line-height
+   The static build inherits 1.65 from the body. Elementor's frontend
+   CSS sets .elementor-heading-title { line-height: 1 }, which would
+   make the hero 9px shorter, so it is restated here.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-heading.wht-hero__brandline .elementor-heading-title { line-height: 1.65; }
+
+/* =========================================================
+   KNOWN DIFFERENCE, deliberately preserved
+
+   wht.css intends the hero question line to be white, 19px, semibold
+   and the location line to be #B9C6DE, 14.5px. Neither renders that
+   way, because `.wht-hero p` has higher specificity than either class.
+   This file reproduces the real rendering so the Elementor build and
+   the HTML build match.
+
+   To fix it properly, raise the specificity in wht.css:
+       .wht-hero p.wht-hero__q   { ... }
+       .wht-hero p.wht-hero__base { ... }
+   then drop the two overrides above. Both builds change together.
+   ========================================================= */

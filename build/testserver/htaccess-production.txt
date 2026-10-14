@@ -1,0 +1,100 @@
+# =====================================================================
+# WHT Electrical - PRODUCTION .htaccess
+#
+# Upload as ".htaccess" (leading dot) into the live web root,
+# i.e. public_html/
+#
+# This is NOT the test-server file. There is deliberately no noindex
+# rule here. If you find "X-Robots-Tag: noindex" anywhere below, you
+# have uploaded the wrong file and Google will drop the site.
+#
+# The redirect block is the important part. The old site had 4 pages
+# and 10 blog posts indexed; without these rules every one of those
+# URLs returns 404 the moment the new site goes up, and whatever
+# ranking they carried is lost.
+# =====================================================================
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# --- 1. One hostname -------------------------------------------------
+# The live site is indexed on the bare domain, and every canonical URL
+# in the new build points there. www currently serves an empty page,
+# which matters because the Contact page prints "www.whtelectrical.co.za"
+# as the business's web address. This makes that work.
+RewriteCond %{HTTP_HOST} ^www\.whtelectrical\.co\.za$ [NC]
+RewriteRule ^(.*)$ https://whtelectrical.co.za/$1 [L,R=301]
+
+# --- 2. https --------------------------------------------------------
+RewriteCond %{HTTPS} !=on
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<IfModule mod_alias.c>
+# --- 3. Pages that survive, under the same URL -----------------------
+#   /          -> /            no redirect needed
+#   /about/    -> /about/      no redirect needed
+#   /contact/  -> /contact/    no redirect needed
+
+# --- 4. The old Services page ----------------------------------------
+# The new site has no single "services" page; it splits into four
+# pillars. Electrical is the closest match and the core of the business.
+# DECISION: change this target if WHT would rather send that traffic to
+# Solar, or to the services section of the home page (/#services).
+Redirect 301 /services/ https://whtelectrical.co.za/electrical/
+
+# --- 5. The old blog posts -------------------------------------------
+# These were theme demo content (hello-world is the WordPress default
+# post). Each goes to the closest real page rather than all to the home
+# page, so anyone arriving from an old link or search result lands
+# somewhere relevant.
+Redirect 301 /troubleshoot-electrical-equipment/ https://whtelectrical.co.za/electrical/fault-finding-repairs/
+Redirect 301 /choosing-the-best-light-bulb/      https://whtelectrical.co.za/electrical/
+Redirect 301 /switching-to-energy-saving-bulbs/  https://whtelectrical.co.za/electrical/
+Redirect 301 /how-electricity-has-changed/       https://whtelectrical.co.za/electrical/
+Redirect 301 /the-right-tools-for-the-job/       https://whtelectrical.co.za/electrical/
+Redirect 301 /major-energy-saving-tips-tricks/   https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /solar-panels-on-a-small-budget/    https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /is-power-plant-growth-good/        https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /are-there-other-affordable-options/ https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /hello-world/                       https://whtelectrical.co.za/
+</IfModule>
+
+<IfModule mod_rewrite.c>
+# --- 6. Archives and feeds the new site has no equivalent for --------
+# Category, tag and author archives, and the WordPress feeds. The new
+# site has no blog, so these all go to the home page.
+RewriteRule ^category/.*$      https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^tag/.*$           https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^author/.*$        https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^feed/?$           https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^comments/feed/?$  https://whtelectrical.co.za/ [L,R=301]
+
+# --- 7. Old WordPress endpoints --------------------------------------
+# Only relevant once WordPress is gone. If WHT stays on WordPress,
+# DELETE this block or you will lock yourself out of wp-admin.
+# RewriteRule ^xmlrpc\.php$ - [G]
+# RewriteRule ^wp-login\.php$ https://whtelectrical.co.za/ [L,R=301]
+</IfModule>
+
+# --- 8. Types and caching --------------------------------------------
+<IfModule mod_mime.c>
+    AddType video/mp4 .mp4
+    AddType image/svg+xml .svg
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css           "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType image/jpeg         "access plus 1 month"
+    ExpiresByType image/svg+xml      "access plus 1 month"
+    ExpiresByType video/mp4          "access plus 1 month"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml application/json
+</IfModule>
+
+# --- 9. 404 -----------------------------------------------------------
+ErrorDocument 404 /404.html

@@ -1,0 +1,47 @@
+# =====================================================================
+# WHT Electrical - TEST SERVER ONLY
+#
+# Upload this file as ".htaccess" (with the leading dot) into the
+# subdomain folder, e.g. public_html/review.whtelectrical.co.za/
+#
+# DELETE IT before this ever becomes the live site. The noindex rule
+# below tells Google to drop every page, which is exactly what you
+# want for a review build and exactly what you do not want for a
+# real one.
+# =====================================================================
+
+# --- Keep the test site out of search results -------------------------
+# robots.txt only asks crawlers not to CRAWL. A page that is linked to
+# from anywhere can still be indexed. This header is the instruction
+# that actually removes it. On Vercel this came from vercel.json, which
+# Apache ignores completely, so it has to be set again here.
+<IfModule mod_headers.c>
+    Header set X-Robots-Tag "noindex, nofollow, noarchive"
+</IfModule>
+
+# --- Serve the hero video with the right type -------------------------
+<IfModule mod_mime.c>
+    AddType video/mp4 .mp4
+    AddType image/svg+xml .svg
+</IfModule>
+
+# --- Short cache on assets so re-uploads show up during review --------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 5 minutes"
+    ExpiresByType application/javascript "access plus 5 minutes"
+    ExpiresByType image/jpeg "access plus 1 hour"
+    ExpiresByType video/mp4 "access plus 1 day"
+</IfModule>
+
+# --- Force https ------------------------------------------------------
+# Comment this block out until the Let's Encrypt certificate is active,
+# or the site will redirect to a URL that does not yet have a cert.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# --- Friendlier 404 ---------------------------------------------------
+ErrorDocument 404 /404.html

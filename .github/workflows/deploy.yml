@@ -1,0 +1,100 @@
+name: Deploy assets to xneelo
+
+# WHAT THIS DOES
+#
+# Syncs assets/ to public_html/assets/ on the live site. That is the
+# stylesheet, the script, the 10 photographs, the logo and the hero
+# video - everything the Elementor pages reference by absolute path.
+#
+# WHAT IT DELIBERATELY DOES NOT DO
+#
+# It does not upload the HTML pages. The site is WordPress + Elementor,
+# so pages live in the database, not as files. Uploading index.html or
+# about/index.html into public_html would sit on top of WordPress -
+# a physical file beats a WordPress rewrite - and you would get half a
+# static site over half a WordPress one.
+#
+# It does not upload robots.txt or sitemap.xml either. A real file
+# overrides the virtual one WordPress/Yoast serves, so ours would
+# silently replace the SEO plugin's. Those stay with the plugin.
+#
+# TRANSPORT
+#
+# SFTP on port 22, not FTP. Probed 2026-10-14: port 21 answers
+# "220 FTP Service" but AUTH TLS and AUTH SSL both return
+# "500 AUTH not understood", so FTPS is unavailable and plain FTP
+# would send the password in clear text. Port 22 answers
+# "SSH-2.0-FTP Service", so SFTP is available and encrypted.
+#
+# SECRETS (Settings -> Secrets and variables -> Actions)
+#   XNEELO_FTP_SERVER     ftp.whtelectrical.co.za
+#   XNEELO_FTP_USERNAME   FTP user from konsoleH -> Manage Services -> FTP Users
+#   XNEELO_FTP_PASSWORD   that user's password
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+env:
+  REMOTE_DIR: public_html/assets/
+
+jobs:
+  deploy-assets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # The production build is what copies assets/ into dist-wp/assets/,
+      # so we deploy from there rather than from the source folder.
+      - name: Build
+        run: node build/build.mjs --wp --prod
+
+      # ---------------------------------------------------------------
+      # Guard: nothing but assets may go up. If the build ever starts
+      # putting pages in this folder, stop rather than overwrite the
+      # live site with files WordPress did not expect.
+      # ---------------------------------------------------------------
+      - name: Check the payload is assets only
+        run: |
+          if find dist-wp/assets -name '*.html' -o -name '*.php' | grep -q .; then
+            echo "::error::dist-wp/assets contains .html or .php. Refusing to upload."
+            find dist-wp/assets \( -name '*.html' -o -name '*.php' \) -print
+            exit 1
+          fi
+          echo "files: $(find dist-wp/assets -type f | wc -l)"
+          echo "size:  $(du -sh dist-wp/assets | cut -f1)"
+          find dist-wp/assets -type f -printf '  %P\n' | sort
+
+      - name: Upload over SFTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ${{ secrets.XNEELO_FTP_SERVER }}
+          username: ${{ secrets.XNEELO_FTP_USERNAME }}
+          password: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          port: 22
+          local_path: './dist-wp/assets/*'
+          remote_path: ${{ env.REMOTE_DIR }}
+          sftp_only: true
+          # Never delete on the remote. If something is removed from the
+          # repo it is cleaned up by hand, so a bad run cannot wipe the
+          # live site's assets.
+          delete_remote_files: false
+
+      - name: Verify over HTTP
+        run: |
+          fail=0
+          for f in wht.css wht.js wht-elementor.css photos/hero-solar-roof.jpg img/wht-logo.svg video/wht-hero.mp4; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://whtelectrical.co.za/assets/$f")
+            printf '  %-32s %s\n' "$f" "$code"
+            [ "$code" = "200" ] || fail=1
+          done
+          [ "$fail" = "0" ] || { echo "::error::Some assets are not reachable over HTTPS."; exit 1; }
