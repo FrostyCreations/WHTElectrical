@@ -38,7 +38,7 @@ export function pageHero({ h1, question = '', lead = [], crumbs = [], cta = null
             cls: 'wht-container wht-pagehero__inner', label: 'Page hero inner',
             pad: dims(44, 22, 84, 22), padT: dims(36, 22, 70, 22), padM: dims(30, 22, 56, 22),
         }, [
-            box({ cls: 'wht-pagehero__content', gap: 0, label: 'Page hero copy' }, [
+            box({ cls: 'wht-pagehero__content', label: 'Page hero copy' }, [
                 heading(h1, { tag: 'h1', anchor: 'wht-h1', label: 'Page heading' }),
                 question ? text(`<p>${question}</p>`, { cls: 'wht-pagehero__q', label: 'Question line' }) : null,
                 ...lead.map((p, i) => text(`<p>${p}</p>`, { label: `Lead paragraph ${i + 1}` })),
@@ -52,7 +52,7 @@ export function pageHero({ h1, question = '', lead = [], crumbs = [], cta = null
    Section heading block: eyebrow, H2, optional lead.
    --------------------------------------------------------- */
 export function sectionHead({ eyebrow, h2, lead = [], center = false, id: anchor }) {
-    return box({ cls: `wht-head${center ? ' wht-head--center' : ''}`, gap: 0, label: 'Section heading' }, [
+    return box({ cls: `wht-head${center ? ' wht-head--center' : ''}`, label: 'Section heading' }, [
         eyebrow ? heading(eyebrow, { tag: 'span', cls: 'wht-eyebrow', label: 'Eyebrow' }) : null,
         heading(h2, { tag: 'h2', cls: 'wht-title', anchor, label: 'Heading' }),
         ...[].concat(lead).filter(Boolean).map((p, i) => text(`<p>${p}</p>`, { cls: 'wht-lead', label: `Lead ${i + 1}` })),

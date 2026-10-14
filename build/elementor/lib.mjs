@@ -78,13 +78,23 @@ export function box(o = {}, children = []) {
         if (o.align) s.flex_align_items = o.align;
         if (o.alignT) s.flex_align_items_tablet = o.alignT;
         if (o.alignM) s.flex_align_items_mobile = o.alignM;
-        const g = String(o.gap ?? 20);
-        s.flex_gap = { column: g, row: g, isLinked: true, unit: 'px', size: Number(g) };
+        /* Only when asked. Elementor turns this into generated per-element CSS,
+           and a default gap would sit on top of the margins wht.css already
+           uses between a card's heading, text and link. */
+        if (o.gap !== undefined) {
+            const g = String(o.gap);
+            s.flex_gap = { column: g, row: g, isLinked: true, unit: 'px', size: Number(g) };
+        }
     }
     if (o.minH) s.min_height = px(o.minH);
     if (o.bg) { s.background_background = 'classic'; s.background_color = o.bg; }
     if (o.bgImg) { s.background_background = 'classic'; s.background_image = { url: o.bgImg, id: '' }; s.background_size = 'cover'; s.background_position = 'center center'; }
-    s.padding = o.pad ?? dims(0);
+    /* Only when asked, for the same reason as the gap above. Defaulting this to
+       zero emitted generated CSS that overrode .wht-problem{padding:24px},
+       .wht-step and .wht-callout, so every card would have imported with no
+       padding at all. The WHT classes load after Elementor's frontend CSS, so
+       leaving this unset lets them win over Elementor's own container default. */
+    if (o.pad) s.padding = o.pad;
     if (o.padT) s.padding_tablet = o.padT;
     if (o.padM) s.padding_mobile = o.padM;
     if (o.margin) s.margin = o.margin;

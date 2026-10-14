@@ -26,7 +26,7 @@ const section = (o, children) => box({
     cls: `wht-section${o.alt ? ' wht-section--alt' : ''}${o.extra ? ' ' + o.extra : ''}`,
     anchor: o.anchor, tag: 'section', label: o.label,
     pad: dims(88, 22, 88, 22), padM: dims(56, 22, 56, 22),
-}, [box({ cls: 'wht-container', gap: 0, label: 'Container' }, children)]);
+}, [box({ cls: 'wht-container', label: 'Container' }, children)]);
 
 /* ---------- the four service cards and eight problem cards ---------- */
 const CARD = {
@@ -93,7 +93,7 @@ export const build = () => [
             cls: 'wht-container wht-hero__inner', label: 'Hero inner',
             pad: dims(100, 22, 140, 22), padT: dims(80, 22, 110, 22), padM: dims(60, 22, 84, 22),
         }, [
-            box({ cls: 'wht-hero__content', gap: 0, label: 'Hero copy' }, [
+            box({ cls: 'wht-hero__content', label: 'Hero copy' }, [
                 heading(SITE.tagline, { tag: 'span', cls: 'wht-hero__brandline', label: 'Brandline' }),
                 heading('Electrical, Solar, Plumbing &amp; Maintenance Across Gauteng', { tag: 'h1', anchor: 'wht-h1', label: 'Headline' }),
                 text('<p>Power tripping? Gate stuck? No hot water? Planning solar or backup power?</p>', { cls: 'wht-hero__q', label: 'Question line' }),
@@ -106,7 +106,7 @@ export const build = () => [
 
     /* SECTION 3 — TRUST STRIP. Four fixed facts with icons; one widget. */
     box({ cls: 'wht-trustbar', tag: 'section', label: 'Trust strip' }, [
-        box({ cls: 'wht-container', gap: 0, label: 'Container' }, [
+        box({ cls: 'wht-container', label: 'Container' }, [
             html(`<ul>
     <li>${ic('clock')} Established 2010</li>
     <li>${ic('building')} Residential &middot; Commercial &middot; Industrial</li>
@@ -122,10 +122,10 @@ export const build = () => [
             eyebrow: 'Start here', h2: 'What Problem Can We Help You Solve?', id: 'wht-problems-title',
             lead: 'Sometimes you know exactly what service you need. Other times, you simply know something has stopped working. Choose the problem that sounds familiar and we&rsquo;ll point you in the right direction.',
         }),
-        box({ cls: 'wht-problems', gap: 0, label: 'Problem cards' },
+        box({ cls: 'wht-problems', label: 'Problem cards' },
             ['fault', 'coc', 'gate', 'fence', 'hotwater', 'backup', 'property', 'unsure'].map((k) => {
                 const [icon, key, h3, p, link] = CARD[k];
-                return box({ cls: 'wht-problem', tag: 'article', gap: 0, label: h3.replace(/&[a-z]+;/g, "'") }, [
+                return box({ cls: 'wht-problem', tag: 'article', label: h3.replace(/&[a-z]+;/g, "'") }, [
                     html(`<div class="wht-problem__icon">${ic(icon)}</div>`, { label: 'Icon' }),
                     heading(h3, { tag: 'h3', label: 'Card heading' }),
                     text(`<p>${p}</p>`, { label: 'Card text' }),
@@ -140,14 +140,14 @@ export const build = () => [
             eyebrow: 'Our services', h2: 'Practical Solutions Across Your Property', id: 'wht-services-title',
             lead: 'WHT provides electrical, power, plumbing and maintenance services for homes, businesses and managed properties.',
         }),
-        box({ cls: 'wht-services', gap: 0, label: 'Service cards' },
+        box({ cls: 'wht-services', label: 'Service cards' },
             SERVICES.map(([, icon, key, h3, p, link, file, w, h, alt]) =>
-                box({ cls: 'wht-service', tag: 'article', gap: 0, label: h3.replace(/&[a-z]+;/g, '&') }, [
-                    box({ cls: 'wht-service__media', gap: 0, label: 'Card image' }, [
+                box({ cls: 'wht-service', tag: 'article', label: h3.replace(/&[a-z]+;/g, '&') }, [
+                    box({ cls: 'wht-service__media', label: 'Card image' }, [
                         image(`${SITE.domain}/assets/photos/${file}`, alt, { label: 'Photo' }),
                         html(`<span class="wht-service__badge">${ic(icon)}</span>`, { label: 'Badge' }),
                     ]),
-                    box({ cls: 'wht-service__body', gap: 0, label: 'Card body' }, [
+                    box({ cls: 'wht-service__body', label: 'Card body' }, [
                         heading(h3, { tag: 'h3', label: 'Card heading' }),
                         text(`<p>${p}</p>`, { label: 'Card text' }),
                         arrowLink(link, key),
@@ -158,17 +158,19 @@ export const build = () => [
 
     /* SECTION 6 — PROBLEM-SOLVING / APPROACH */
     section({ anchor: 'approach', extra: 'wht-brand', label: 'Our approach' }, [
-        box({ cls: 'wht-grid-2', gap: 0, label: 'Approach grid' }, [
-            box({ gap: 0, label: 'Approach copy' }, [
+        box({ cls: 'wht-grid-2', label: 'Approach grid' }, [
+            box({ label: 'Approach copy' }, [
                 heading('Our approach', { tag: 'span', cls: 'wht-eyebrow', label: 'Eyebrow' }),
                 heading('Problems Found. Solutions Delivered.', { tag: 'h2', anchor: 'wht-approach-title', label: 'Heading' }),
                 text('<p>A recurring fault can be frustrating, especially when the cause is hidden.</p>', { label: 'Paragraph 1' }),
                 text('<p>WHT approaches the job by understanding what is happening, assessing the relevant system and identifying what needs attention before recommending the appropriate solution.</p>', { label: 'Paragraph 2' }),
                 text('<p>That approach applies across electrical work, backup power, gate motors, plumbing and general property maintenance.</p>', { label: 'Paragraph 3' }),
                 text('<p>The goal is simple: help you understand the problem and get things working properly again.</p>', { cls: 'wht-emph', label: 'Emphasis line' }),
-                box({ gap: 0, label: 'CTA' }, [quoteBtn('Tell Us What&rsquo;s Happening')]),
+                /* The static build wraps this button in a <p>, which carries the
+                   1.25rem paragraph margin. Restated as a container margin. */
+                box({ margin: dims(0, 0, 20, 0), label: 'CTA' }, [quoteBtn('Tell Us What&rsquo;s Happening')]),
             ]),
-            box({ gap: 0, label: 'Approach points' }, [
+            box({ label: 'Approach points' }, [
                 html(`<ul class="wht-brand__points">
     <li>${ic('check')} Listen to the problem.</li>
     <li>${ic('check')} Assess what is happening.</li>
@@ -182,9 +184,12 @@ export const build = () => [
     /* SECTION 7 — PROCESS */
     section({ anchor: 'process', label: 'How it works' }, [
         sectionHead({ eyebrow: 'How it works', h2: 'What Happens When You Contact WHT?', center: true, id: 'wht-process-title' }),
-        box({ cls: 'wht-steps wht-steps--5', gap: 0, label: 'Process steps' },
-            PROCESS.map(([h3, p], i) => box({ cls: 'wht-step', gap: 0, label: `Step ${i + 1}` }, [
-                html(`<span class="wht-step__n">${i + 1}</span>`, { label: 'Number' }),
+        /* The class is wht-steps, with no modifier: wht-steps--5 does not exist
+           in wht.css. The number is a div.wht-step__num — wht-step__n was a typo
+           that left it unstyled and every step row about 34px short. */
+        box({ cls: 'wht-steps', label: 'Process steps' },
+            PROCESS.map(([h3, p], i) => box({ cls: 'wht-step', label: `Step ${i + 1}` }, [
+                html(`<div class="wht-step__num">${i + 1}</div>`, { label: 'Number' }),
                 heading(h3, { tag: 'h3', label: 'Step heading' }),
                 text(`<p>${p}</p>`, { label: 'Step text' }),
             ]))),
@@ -192,25 +197,25 @@ export const build = () => [
 
     /* SECTION 8 — COC FEATURE */
     section({ anchor: 'coc', alt: true, label: 'COC feature' }, [
-        box({ cls: 'wht-callout', gap: 0, label: 'Callout' }, [
-            box({ gap: 0, label: 'Callout copy' }, [
+        box({ cls: 'wht-callout', label: 'Callout' }, [
+            box({ label: 'Callout copy' }, [
                 heading('Compliance', { tag: 'span', cls: 'wht-eyebrow', label: 'Eyebrow' }),
                 heading('Need an Electrical COC?', { tag: 'h2', anchor: 'wht-coc-title', label: 'Heading' }),
                 text('<p>Whether you are selling a property, checking an installation or dealing with a compliance requirement, WHT can assist with electrical inspections, remedial work and Certificates of Compliance.</p>', { label: 'Paragraph 1' }),
                 text('<p>Electric fence compliance is also available as a separate service.</p>', { label: 'Paragraph 2' }),
             ]),
-            box({ gap: 0, label: 'Callout CTA' }, [quoteBtn('Ask About a COC', 'coc')]),
+            box({ label: 'Callout CTA' }, [quoteBtn('Ask About a COC', 'coc')]),
         ]),
     ]),
 
     /* SECTION 9 — MARKETS SERVED */
     section({ anchor: 'markets', label: 'Markets served' }, [
         sectionHead({ eyebrow: 'Who we work with', h2: 'Support for Homes, Businesses &amp; Properties', id: 'wht-markets-title' }),
-        box({ cls: 'wht-markets', gap: 0, label: 'Market cards' }, [
+        box({ cls: 'wht-markets', label: 'Market cards' }, [
             ['home', 'Residential', 'Electrical repairs, solar, plumbing, security systems and maintenance for the places people call home.'],
             ['building', 'Commercial', 'Practical electrical, power and property support that helps businesses keep operating.'],
             ['factory', 'Industrial', 'Electrical and power services for larger installations and operational environments.'],
-        ].map(([icon, h3, p]) => box({ cls: 'wht-market', tag: 'article', gap: 0, label: h3 }, [
+        ].map(([icon, h3, p]) => box({ cls: 'wht-market', tag: 'article', label: h3 }, [
             html(`<div class="wht-market__icon">${ic(icon)}</div>`, { label: 'Icon' }),
             heading(h3, { tag: 'h3', label: 'Heading' }),
             text(`<p>${p}</p>`, { label: 'Text' }),
@@ -227,15 +232,15 @@ export const build = () => [
             eyebrow: 'Recent work', h2: 'Recent WHT Projects', id: 'wht-work-title',
             lead: 'Real work tells the story better than generic claims. Explore examples of problems WHT has investigated, systems installed and property work completed for clients across Gauteng and South Africa.',
         }),
-        box({ cls: 'wht-projects', gap: 0, label: 'Project cards' }, [
+        box({ cls: 'wht-projects', label: 'Project cards' }, [
             ['fault-finding-meter.jpg', 576, 384, 'A clamp meter taking a current reading during electrical fault finding', 'Recurring Electrical Trips', 'fault'],
             ['project-backup-power.jpg', 800, 533, 'An inverter and two lithium batteries mounted on a wall beside the distribution board', 'Backup Power Installation', 'solar'],
             ['project-gate-motor.jpg', 800, 534, 'A gate motor installed alongside a sliding driveway gate', 'Gate Motor Replacement', 'gate'],
-        ].map(([file, w, h, alt, h3, key]) => box({ cls: 'wht-project', tag: 'article', gap: 0, label: h3 }, [
-            box({ cls: 'wht-project__media', gap: 0, label: 'Project image' }, [
+        ].map(([file, w, h, alt, h3, key]) => box({ cls: 'wht-project', tag: 'article', label: h3 }, [
+            box({ cls: 'wht-project__media', label: 'Project image' }, [
                 image(`${SITE.domain}/assets/photos/${file}`, alt, { label: 'Photo' }),
             ]),
-            box({ cls: 'wht-project__body', gap: 0, label: 'Project body' }, [
+            box({ cls: 'wht-project__body', label: 'Project body' }, [
                 html(`<span class="wht-project__loc">${ic('pin')} Example project</span>`, { label: 'Location' }),
                 heading(h3, { tag: 'h3', label: 'Project heading' }),
                 html(`<dl>
@@ -255,8 +260,8 @@ export const build = () => [
             eyebrow: 'Reviews', h2: 'What Clients Say About WHT', id: 'wht-reviews-title',
             lead: 'Finding a contractor you can rely on matters. Read what WHT clients have said about their experience, the work completed and the service they received.',
         }),
-        box({ cls: 'wht-reviews', gap: 0, label: 'Review cards' },
-            [1, 2, 3].map((n) => box({ cls: 'wht-review', tag: 'figure', gap: 0, label: `Review ${n} — REPLACE` }, [
+        box({ cls: 'wht-reviews', label: 'Review cards' },
+            [1, 2, 3].map((n) => box({ cls: 'wht-review', tag: 'figure', label: `Review ${n} — REPLACE` }, [
                 html(`<div class="wht-review__stars" aria-hidden="true">${ic('star').repeat(5)}</div>`, { label: 'Stars' }),
                 text('<blockquote><p>Placeholder &mdash; paste a genuine Google review here, word for word.</p></blockquote>', { label: 'Review text — REPLACE' }),
                 html('<figcaption>Reviewer name<span>Google review</span></figcaption>', { label: 'Reviewer — REPLACE' }),
@@ -267,14 +272,14 @@ export const build = () => [
        itself, so the hand-written FAQPage JSON-LD is no longer needed here. */
     section({ anchor: 'faqs', alt: true, label: 'FAQs' }, [
         sectionHead({ eyebrow: 'FAQs', h2: 'Common Questions', center: true, id: 'wht-faq-title' }),
-        box({ cls: 'wht-faqs', gap: 0, label: 'FAQ accordion' }, [
+        box({ cls: 'wht-faqs', label: 'FAQ accordion' }, [
             accordionFaqs(FAQS),
         ]),
     ]),
 
     /* SECTION 13 — FINAL CTA */
     box({ cls: 'wht-ctaband wht-section', tag: 'section', label: 'Final CTA', pad: dims(88, 22, 88, 22), padM: dims(56, 22, 56, 22) }, [
-        box({ cls: 'wht-container', gap: 0, label: 'Container' }, [
+        box({ cls: 'wht-container', label: 'Container' }, [
             heading('Tell Us What&rsquo;s Happening', { tag: 'h2', anchor: 'wht-cta-title', label: 'Heading' }),
             text('<p>Need electrical, solar, plumbing or property maintenance help? Tell WHT about the problem or project and we&rsquo;ll help you determine the next step.</p>', { label: 'Text' }),
             box({ cls: 'wht-ctaband__btns', row: true, wrap: true, keepRowM: true, gap: 14, label: 'Buttons' }, [quoteBtn(), waBtn()]),

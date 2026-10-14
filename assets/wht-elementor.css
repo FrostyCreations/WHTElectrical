@@ -176,6 +176,7 @@
 .wht-site .e-con.wht-related,
 .wht-site .e-con.wht-markets,
 .wht-site .e-con.wht-problems,
+.wht-site .e-con.wht-callout,
 .wht-site .e-con.wht-steps,
 .wht-site .e-con.wht-trustbar ul { display: grid; }
 
@@ -231,5 +232,15 @@
    win. Raising the specificity here instead would silently
    flatten the hero and page-hero spacing.
    --------------------------------------------------------- */
-.wht-site :where(.elementor-widget-heading .elementor-heading-title) { margin: 0 0 .6em; }
+.wht-site :where(.elementor-widget-heading .elementor-heading-title) { margin: 0 0 .6em; line-height: 1.15; }
 .wht-site :where(.elementor-widget-text-editor > .elementor-widget-container > p) { margin: 0 0 1.25rem; }
+
+/* ---------------------------------------------------------
+   9. Containing the heading margin
+   Elementor's .elementor-widget-container is a plain block with no
+   padding or border, so the heading's bottom margin collapses straight
+   out of it and adds no height. The card looks tight and the whole
+   page comes up short. flow-root makes the wrapper contain its
+   children's margins without changing anything else about it.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-container { display: flow-root; }

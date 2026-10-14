@@ -127,6 +127,35 @@ ${inner}
     throw new Error(`unknown elType: ${el.elType}`);
 }
 
+/* Elementor turns an element's padding/margin/gap SETTINGS into generated
+   per-element CSS, at a specificity that beats ordinary class rules. Without
+   this the simulation only reflects CSS classes, so anything set through the
+   Elementor settings is invisible and the comparison under-reports. */
+const dimsToCss = (d) => d && typeof d === 'object' && d.top !== undefined
+    ? `${d.top}${d.unit} ${d.right}${d.unit} ${d.bottom}${d.unit} ${d.left}${d.unit}` : null;
+
+export function generatedCss(content) {
+    const out = [];
+    (function walk(els) {
+        for (const el of els || []) {
+            const s = el.settings || {};
+            const decls = [];
+            const pad = dimsToCss(s.padding);
+            const mar = dimsToCss(s.margin);
+            if (pad) decls.push(`padding:${pad}`);
+            if (mar) decls.push(`margin:${mar}`);
+            if (s.flex_gap && s.flex_gap.column !== undefined) {
+                decls.push(`gap:${s.flex_gap.column}${s.flex_gap.unit || 'px'}`);
+            }
+            if (decls.length) {
+                out.push(`.elementor-element.elementor-element-${el.id}{${decls.join(';')}}`);
+            }
+            walk(el.elements);
+        }
+    })(content);
+    return out.join('\n');
+}
+
 /* Elementor's own baseline styles that affect what is being compared.
    Only the handful that touch containers, headings, text and buttons. */
 const ELEMENTOR_BASE = `
@@ -153,6 +182,8 @@ export function renderPage(content, title) {
 <link rel="stylesheet" href="/assets/wht.css">
 <style>${ELEMENTOR_BASE}</style>
 <link rel="stylesheet" href="/assets/wht-elementor.css">
+<!-- Elementor's generated per-element CSS, which beats class rules. Last, as Elementor loads it. -->
+<style>${generatedCss(content)}</style>
 </head>
 <body class="wht-site">
 ${sprite()}

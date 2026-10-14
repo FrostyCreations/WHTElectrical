@@ -19,11 +19,11 @@ export const build = () => [
     }, [
         box({ cls: 'wht-container wht-contact-grid', label: 'Contact grid' }, [
 
-            box({ gap: 0, label: 'Left column — details' }, [
+            box({ label: 'Left column — details' }, [
                 heading('Contact Details', { tag: 'h2', cls: 'wht-title', label: 'Contact Details heading' }),
                 contactDetails(),
 
-                box({ cls: 'wht-support', gap: 0, label: 'Not sure which service' }, [
+                box({ cls: 'wht-support', label: 'Not sure which service' }, [
                     heading('Not Sure Which Service to Choose?', { tag: 'h3', label: 'Support heading' }),
                     text('<p>That is fine.</p>', { label: 'Support line 1' }),
                     text('<p>Describe the problem in your own words and WHT can help identify which service is relevant.</p>',
