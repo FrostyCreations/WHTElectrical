@@ -11,26 +11,10 @@
  */
 
 /* ---------------------------------------------------------------
-   The site's own CSS and JS, loaded the way the real site will load
-   them. Without this the pages render completely unstyled, because
-   every rule in wht.css is scoped to .wht-site.
+   Load the generated chrome plugin — the real artifact that ships —
+   rather than duplicating its enqueue and header/footer output here.
    --------------------------------------------------------------- */
-add_action('wp_enqueue_scripts', function () {
-    $base = content_url('/wht/assets');
-    wp_enqueue_style('wht-fonts',
-        'https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap',
-        [], null);
-    wp_enqueue_style('wht', "$base/wht.css", [], filemtime_safe('/wordpress/wp-content/wht/assets/wht.css'));
-    /* After wht.css: the bridge re-aims rules at the DOM Elementor renders. */
-    wp_enqueue_style('wht-elementor', "$base/wht-elementor.css", ['wht'],
-        filemtime_safe('/wordpress/wp-content/wht/assets/wht-elementor.css'));
-    wp_enqueue_script('wht', "$base/wht.js", [], filemtime_safe('/wordpress/wp-content/wht/assets/wht.js'), true);
-}, 20);
-
-function filemtime_safe($p) { return file_exists($p) ? filemtime($p) : null; }
-
-/* Every style is scoped to .wht-site, so the class has to be on the body. */
-add_filter('body_class', function ($c) { $c[] = 'wht-site'; return $c; });
+require_once '/wordpress/wp-content/wht/dist-plugin/wht-chrome/wht-chrome.php';
 
 /* ---------------------------------------------------------------
    Serve /assets/... from the mount.

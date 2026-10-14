@@ -19,3 +19,4 @@ dist-elementor/
 
 # Playground test fixtures, large binaries
 build/playground/*.zip
+dist-plugin/

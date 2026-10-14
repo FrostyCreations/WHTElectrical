@@ -62,6 +62,35 @@ site renders completely unstyled.
 
 ---
 
+---
+
+## ⚠️ No Elementor Pro? Use the plugin instead
+
+Elementor's Theme Builder needs Pro. Without it, `wht-header.json` and
+`wht-footer.json` are rejected with "Invalid template type", and the page
+publishes with no navigation, logo, footer or mobile contact bar.
+
+**wht-chrome.zip** does the same job without Pro:
+
+1. **Plugins → Add New → Upload Plugin** → `wht-chrome.zip` → Install → Activate
+2. That is it. It replaces section 2 (sitewide code and body class) AND the
+   two Theme Builder templates — skip both.
+
+It enqueues the stylesheets and script, adds the `.wht-site` body class, and
+prints the header and footer on `wp_body_open` and `wp_footer`. Those hooks
+fire on the Elementor Canvas page template, which skips the theme's own
+header and footer, so the WHT chrome appears with nothing competing with it.
+
+Verified in WordPress 7.1.1 with **free Elementor 4.2.4 and no Pro**: header,
+footer, drawer, search overlay and mobile bar all present, 37 icons all
+resolving, nav correctly marking the current page, no broken images.
+
+**When Pro arrives**, you can either leave this plugin alone — it works fine —
+or move the header and footer into Theme Builder and deactivate it. Do not do
+both or you will get two of each.
+
+---
+
 ## 3. ⚠️ Import as a full Administrator
 
 The header template carries an inline SVG sprite of 37 icons. **WordPress

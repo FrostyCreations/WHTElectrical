@@ -244,3 +244,47 @@
    children's margins without changing anything else about it.
    --------------------------------------------------------- */
 .wht-site .elementor-widget-container { display: flow-root; }
+
+/* =========================================================
+   Found only by importing into real WordPress + Elementor.
+   Neither of these can show up in a DOM simulation, because
+   both come from Elementor's own runtime CSS.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   10. Absolutely-positioned backdrops
+   Elementor gives EVERY widget wrapper position:relative, so it
+   becomes the containing block for anything absolute inside it.
+   The hero backdrop is inset:0 and sized itself against a wrapper
+   of height 0 — the bolt panel, the video and the yellow edge all
+   collapsed to nothing. Making these two wrappers static hands the
+   containing block back to .wht-hero / .wht-pagehero, which are
+   position:relative in wht.css for exactly this purpose.
+   --------------------------------------------------------- */
+.wht-site .wht-hero > .elementor-widget-html,
+.wht-site .wht-pagehero > .elementor-widget-html { position: static; }
+
+/* ---------------------------------------------------------
+   11. Heading colour
+   Elementor's kit sets
+       .elementor-widget-heading .elementor-heading-title
+         { color: var(--e-global-color-primary) }
+   which is #6EC1E4 by default and outranks wht.css's
+   `:where(.wht-site) h2` (0,1,0) and even `.wht-hero h1` (0,1,1).
+   Every heading on the site came out Elementor blue.
+
+   Setting the Global Colors in Elementor's Site Settings to the WHT
+   palette is the tidier long-term fix, but it must not be the only
+   one: these restate the WHT colours so the site is correct whatever
+   state the kit is in.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-heading .elementor-heading-title { color: var(--wht-navy); }
+
+.wht-site .wht-hero .elementor-widget-heading .elementor-heading-title,
+.wht-site .wht-pagehero .elementor-widget-heading .elementor-heading-title,
+.wht-site .wht-brand .elementor-widget-heading .elementor-heading-title,
+.wht-site .wht-ctaband .elementor-widget-heading .elementor-heading-title { color: #fff; }
+
+/* The eyebrow on dark bands is yellow, and the hero brandline already
+   has its own rule above at higher specificity. */
+.wht-site .wht-brand .elementor-widget-heading.wht-eyebrow .elementor-heading-title { color: var(--wht-yellow); }
