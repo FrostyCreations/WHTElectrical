@@ -63,6 +63,13 @@ const WIDGETS = {
 </div>`);
     },
 
+    image(el) {
+        const im = el.settings.image || {};
+        const alt = (im.alt || '').replace(/"/g, '&quot;');
+        return wrapWidget(el, 'image',
+            `<img src="${im.url || ''}" alt="${alt}" loading="lazy" decoding="async">`);
+    },
+
     html(el) {
         return wrapWidget(el, 'html', el.settings.html);
     },
