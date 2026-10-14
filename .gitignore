@@ -16,3 +16,6 @@ handoff/
 standalone/
 _elementor-sim*.html
 dist-elementor/
+
+# Playground test fixtures, large binaries
+build/playground/*.zip
