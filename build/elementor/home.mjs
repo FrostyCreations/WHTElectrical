@@ -165,7 +165,9 @@ export const build = () => [
                 text('<p>A recurring fault can be frustrating, especially when the cause is hidden.</p>', { label: 'Paragraph 1' }),
                 text('<p>WHT approaches the job by understanding what is happening, assessing the relevant system and identifying what needs attention before recommending the appropriate solution.</p>', { label: 'Paragraph 2' }),
                 text('<p>That approach applies across electrical work, backup power, gate motors, plumbing and general property maintenance.</p>', { label: 'Paragraph 3' }),
-                text('<p>The goal is simple: help you understand the problem and get things working properly again.</p>', { cls: 'wht-emph', label: 'Emphasis line' }),
+                /* The class goes on the <p>, not the widget: on the wrapper,
+                   .wht-brand p outranks it and the line renders as body text. */
+                text('<p class="wht-emph">The goal is simple: help you understand the problem and get things working properly again.</p>', { label: 'Emphasis line' }),
                 /* The static build wraps this button in a <p>, which carries the
                    1.25rem paragraph margin. Restated as a container margin. */
                 box({ margin: dims(0, 0, 20, 0), label: 'CTA' }, [quoteBtn('Tell Us What&rsquo;s Happening')]),

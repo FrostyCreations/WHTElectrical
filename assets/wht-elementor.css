@@ -375,7 +375,7 @@
    --------------------------------------------------------- */
 .wht-site .elementor-widget-heading.wht-sublabel .elementor-heading-title {
     font-family: var(--wht-font-head); font-weight: 700; text-transform: uppercase;
-    letter-spacing: .08em; font-size: 13px; line-height: 1.65; color: var(--wht-blue); margin: 0;
+    letter-spacing: .08em; font-size: 13px; line-height: 1.15; color: var(--wht-blue); margin: 0;
 }
 /* Section 11 turned every eyebrow navy. They are blue in wht.css. */
 .wht-site .elementor-widget-heading.wht-eyebrow .elementor-heading-title { color: var(--wht-blue); line-height: 1.65; margin: 0; }
@@ -469,3 +469,10 @@
 .wht-site .elementor-widget-heading.wht-eyebrow .elementor-heading-title { font-family: var(--wht-font-head); font-weight: 700; }
 .wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title-text { font-family: var(--wht-font-head); font-weight: 700; }
 .wht-site .elementor-widget-image.wht-figure .widget-image-caption { line-height: 1.65; }
+
+.wht-site .elementor-widget-text-editor.wht-pagehero__q { font-weight: 600; }
+
+/* In wht.css .wht-prose h2 (0,1,1) outranks .wht-title (0,1,0), so a
+   titled heading inside prose is 26px, not 38px. Section 5 sizes every
+   .wht-title heading at 1em of the wrapper; this restores the prose case. */
+.wht-site .wht-prose .elementor-widget-heading.wht-title .elementor-heading-title { font-size: clamp(20px, 2.4vw, 26px); }
