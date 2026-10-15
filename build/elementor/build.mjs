@@ -88,21 +88,6 @@ for (const c of CHROME) {
     console.log(`  ${c.slug.padEnd(10)} ${String(c2.html || 0).padStart(3)} html widget(s)  → Theme Builder (${chrome[c.type]})`);
 }
 
-/* A launch variant of the homepage with the placeholder Recent Work and
-   Reviews sections left out, so a live publish cannot ship scaffolding. */
-{
-    const home = await import('./home.mjs');
-    resetIds('wht-home-launch');
-    const content = home.build({ placeholders: false });
-    writeFileSync(join(outDir, 'wht-home-launch.json'), JSON.stringify({
-        content, page_settings: {}, version: '0.4', title: 'WHT — Home (launch)', type: 'page',
-    }, null, 2));
-    const n = census(content);
-    const editable = Object.entries(n).filter(([k]) => k !== 'container' && k !== 'html').reduce((a, [, v]) => a + v, 0);
-    console.log(`  home-launch ${String(editable).padStart(3)} editable widgets  (Recent Work + Reviews omitted)`);
-    built['home-launch'] = content;
-}
-
 /* A full-page simulation: header + page + footer, which is what the live page
    actually is. Checking the page on its own would miss the chrome entirely. */
 for (const slug of ['home', 'contact']) {

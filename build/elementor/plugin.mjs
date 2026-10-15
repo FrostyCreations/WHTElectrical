@@ -137,7 +137,7 @@ add_action('admin_menu', function () {
 function wht_chrome_admin_page() {
     if (!current_user_can('manage_options')) wp_die('Not allowed.');
 
-    $tpl_file = plugin_dir_path(__FILE__) . 'wht-home-launch.json';
+    $tpl_file = plugin_dir_path(__FILE__) . 'wht-home.json';
     echo '<div class="wrap"><h1>WHT Homepage</h1>';
 
     if (isset($_POST['wht_do_import']) && check_admin_referer('wht_import')) {
@@ -211,8 +211,8 @@ const outDir = join(root, 'dist-plugin', 'wht-chrome');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'wht-chrome.php'), php);
 /* The template travels inside the plugin, so the import needs no file upload. */
-writeFileSync(join(outDir, 'wht-home-launch.json'),
-    readFileSync(join(root, 'dist-elementor', 'wht-home-launch.json'), 'utf8'));
+writeFileSync(join(outDir, 'wht-home.json'),
+    readFileSync(join(root, 'dist-elementor', 'wht-home.json'), 'utf8'));
 
 const count = (s, re) => (s.match(re) || []).length;
 console.log('wrote dist-plugin/wht-chrome/wht-chrome.php\n');

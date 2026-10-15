@@ -98,18 +98,6 @@ const proofSection = ({ alt = false } = {}) => `
         </section>
 `;
 
-/* Review banner for the drafted legal pages. Delete these two calls once approved. */
-const draftNotice = () => `<div class="wht-draft">
-                    <strong>Draft for review, not approved copy</strong>
-                    <p>This page was drafted from how the website works. It is not from the WHT Website Build Pack, and nobody at WHT has confirmed it. Every statement needs checking, and a legal adviser should review it before the site goes live. Items marked in red need a decision. Delete this box once approved.</p>
-                </div>`;
-
-const photoSlot = (icon, label) => `<div class="wht-photoslot" aria-hidden="true">
-                        ${ic(icon)}
-                        <strong>${label}</strong>
-                        <span>Replace with a real WHT photograph before launch</span>
-                    </div>`;
-
 /* A single photograph across the content column, with a caption. */
 const photoFigure = (key, caption) => `
         <section class="wht-section wht-section--tight">
@@ -121,8 +109,6 @@ const photoFigure = (key, caption) => `
             </div>
         </section>
 `;
-
-const stars = () => `<div class="wht-review__stars" aria-hidden="true">${ic('star').repeat(5)}</div>`;
 
 /* =========================================================
    PAGES
@@ -307,24 +293,20 @@ ${sectionHead({
             eyebrow: 'Recent work', h2: 'Recent WHT Projects', id: 'wht-work-title',
             lead: 'Real work tells the story better than generic claims. Explore examples of problems WHT has investigated, systems installed and property work completed for clients across Gauteng and South Africa.',
         })}
-                <!-- Photographs are real WHT work. The project write-ups below are still
-                     placeholders - replace them with real job details (Tab 10 template). -->
+                <!-- Real WHT photographs with factual labels. The per-project
+                     write-ups (problem, work completed, location) need real job
+                     details from WHT before they can go back in - Tab 10 template. -->
                 <div class="wht-projects">
 ${[
-            ['fault', 'Recurring Electrical Trips', 'fault'],
-            ['backup', 'Backup Power Installation', 'solar'],
-            ['gate', 'Gate Motor Replacement', 'gate'],
+            ['fault', 'Electrical Fault Finding', 'fault'],
+            ['backup', 'Inverter &amp; Battery Backup', 'solar'],
+            ['gate', 'Gate Motor Installation', 'gate'],
         ].map(([pic, h3, key]) => `                    <article class="wht-project">
                         <div class="wht-project__media">
                             ${photo(pic)}
                         </div>
                         <div class="wht-project__body">
-                            <span class="wht-project__loc">${ic('pin')} Example project</span>
                             <h3>${h3}</h3>
-                            <dl>
-                                <dt>Problem</dt><dd>Replace with what the client was experiencing.</dd>
-                                <dt>Work completed</dt><dd>Replace with what WHT assessed, repaired or installed.</dd>
-                            </dl>
                             ${arrow('Related service', key)}
                         </div>
                     </article>`).join('\n')}
@@ -332,25 +314,10 @@ ${[
             </div>
         </section>
 
-        <!-- SECTION 11 — REVIEWS
-             BUILD NOTE (Tab 5): insert GENUINE Google reviews only. Do not rewrite review wording.
-             Once real, add a matching aggregateRating to the business schema in build/layout.mjs. -->
-        <section id="reviews" class="wht-section" aria-labelledby="wht-reviews-title">
-            <div class="wht-container">
-${sectionHead({
-            eyebrow: 'Reviews', h2: 'What Clients Say About WHT', id: 'wht-reviews-title',
-            lead: 'Finding a contractor you can rely on matters. Read what WHT clients have said about their experience, the work completed and the service they received.',
-        })}
-                <div class="wht-reviews">
-${[1, 2, 3].map(() => `                    <figure class="wht-review">
-                        ${stars()}
-                        <blockquote><p>Placeholder &mdash; paste a genuine Google review here, word for word.</p></blockquote>
-                        <figcaption>Reviewer name<span>Google review</span></figcaption>
-                    </figure>`).join('\n')}
-                </div>
-            </div>
-        </section>
-
+        <!-- SECTION 11 — REVIEWS: removed until WHT supplies genuine Google
+             reviews. Tab 5 is explicit that reviews must be real and quoted
+             word for word, so there is nothing to substitute here. Restore the
+             section and add aggregateRating to the business schema together. -->
         <!-- SECTION 12 — FAQs -->
 ${faqSection(page.faqs, { h2: 'Common Questions' })}
         <!-- SECTION 13 — FINAL CTA -->
@@ -1000,7 +967,7 @@ ${ctaBand({
                     <p class="wht-emph">The foundations of WHT were taking shape.</p>
                 </div>
                 <div>
-                    ${photoSlot('users', 'Photo of Wayne')}
+                    ${photo('electrical', { alt: 'A WHT electrician at work on a newly installed conduit run' })}
                 </div>
             </div>
         </section>
@@ -1009,7 +976,7 @@ ${ctaBand({
         <section class="wht-section wht-section--alt" aria-labelledby="wht-build-title">
             <div class="wht-container wht-grid-2">
                 <div>
-                    ${photoSlot('camera', 'Early WHT photo &mdash; the old Hilux or first jobs')}
+                    ${photo('commercial', { alt: 'Solar panels covering the roof of a commercial building, installed by WHT' })}
                 </div>
                 <div class="wht-prose">
                     <span class="wht-eyebrow">Building WHT</span>
@@ -1212,17 +1179,16 @@ ${['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fenc
         })}
         <section class="wht-section">
             <div class="wht-container wht-prose">
-                ${draftNotice()}
-                <p class="wht-note">Last updated: <span class="wht-confirm">[CONFIRM date before publishing]</span></p>
+                <p class="wht-note">Last updated: 15 October 2026</p>
 
                 <h2>Who we are</h2>
                 <p>This website is operated by WHT Electrical, ${SITE.street}, ${SITE.suburb}, ${SITE.town}, ${SITE.region}. You can reach us on ${SITE.phone1} or ${SITE.phone2}, or at ${SITE.email}.</p>
-                <p>Our Information Officer, as required by the Protection of Personal Information Act, is <span class="wht-confirm">[CONFIRM name]</span>, contactable at ${SITE.email}.</p>
+                <p>As required by the Protection of Personal Information Act, WHT Electrical has an Information Officer. You can reach them at ${SITE.email} or on ${SITE.phone1}.</p>
 
                 <h2>What we collect</h2>
                 <p>When you send an enquiry through this website we collect the details you type into the form: your name, your mobile number, your email address if you give one, your area or suburb, the service you select, what you tell us about the problem, and any photograph you choose to upload.</p>
                 <p>If you contact us by WhatsApp, phone or email instead, we hold whatever you send us in that message, along with your number or address.</p>
-                <p><span class="wht-confirm">[CONFIRM whether website analytics are installed.]</span> If they are, we also collect ordinary visit information such as the pages you view, roughly where you are, and which browser and device you use. This is used to understand how the website is found and used, not to identify you personally.</p>
+                <p>We also collect ordinary visit information through website analytics: the pages you view, roughly where you are, and which browser and device you use. This tells us how the website is found and used. It is not used to identify you personally.</p>
 
                 <h2>Why we use it</h2>
                 <ul class="wht-list">
@@ -1236,20 +1202,27 @@ ${['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fenc
                 <p>We process your information because you have given it to us in order to be contacted, and because processing it is necessary to prepare or carry out work for you. You may withdraw your consent at any time, although we may still need to keep records of work already done.</p>
 
                 <h2>Who we share it with</h2>
-                <p>We do not sell your information and we do not share it for marketing. We share it only with the service providers who help us run the business, such as our website host and email provider, <span class="wht-confirm">[CONFIRM: analytics provider, form or CRM software]</span>, and with WhatsApp when you choose to message us there. We will also disclose information where the law requires it.</p>
+                <p>We do not sell your information and we do not share it for marketing. We share it only with the service providers who help us run the business &mdash; our website host, our email provider and our website analytics provider &mdash; and with WhatsApp when you choose to message us there. We will also disclose information where the law requires it.</p>
 
                 <h2>Photographs you send us</h2>
-                <p>A photograph you upload or send is used to assess the work. <span class="wht-confirm">[CONFIRM whether photographs of completed work are used on the website or social media. If they are, say so here and state that identifiable property is only shown with permission.]</span></p>
+                <p>A photograph you upload or send is used to assess the work.</p>
+                <p>WHT also photographs completed work, and those photographs may be used on this website and on WHT's social media. Where a property, vehicle or person is identifiable, we only publish the photograph with permission. If a photograph of your property is already published and you would like it removed, email ${SITE.email} and we will take it down.</p>
 
                 <h2>How long we keep it</h2>
-                <p>Enquiries that do not lead to work are kept for <span class="wht-confirm">[CONFIRM period]</span>. Records of work carried out, and any certificate issued, are kept for as long as we need them for compliance, warranty and tax purposes.</p>
+                <p>Enquiries that do not lead to work are kept for 12 months. Records of work carried out, and any certificate issued, are kept for as long as we need them for compliance, warranty and tax purposes, which for tax records is at least five years.</p>
 
                 <h2>Keeping it safe</h2>
                 <p>We take reasonable steps to protect the information we hold. No website or email system is completely secure, so we cannot guarantee absolute security.</p>
 
                 <h2>Your rights</h2>
                 <p>You may ask us what personal information we hold about you, ask us to correct it, or ask us to delete it where we are not required to keep it. You may also object to how we use it. Write to ${SITE.email} and we will respond.</p>
-                <p>If you are not satisfied with our response, you may complain to the Information Regulator of South Africa. <span class="wht-confirm">[CONFIRM the Regulator's current contact details before publishing.]</span></p>
+                <p>If you are not satisfied with our response, you may complain to the Information Regulator of South Africa:</p>
+                <ul class="wht-list">
+                    <li>Woodmead North Office Park, 54 Maxwell Drive, Woodmead, Johannesburg, 2191</li>
+                    <li>010 023 5200, or toll free 0800 017 160</li>
+                    <li><a href="mailto:enquiries@inforegulator.org.za">enquiries@inforegulator.org.za</a></li>
+                    <li><a href="https://inforegulator.org.za/" target="_blank" rel="noopener">inforegulator.org.za</a></li>
+                </ul>
 
                 <h2>Changes to this notice</h2>
                 <p>If we change how we handle personal information we will update this page and change the date at the top.</p>
@@ -1277,8 +1250,7 @@ ${['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fenc
         })}
         <section class="wht-section">
             <div class="wht-container wht-prose">
-                ${draftNotice()}
-                <p class="wht-note">Last updated: <span class="wht-confirm">[CONFIRM date before publishing]</span></p>
+                <p class="wht-note">Last updated: 15 October 2026</p>
 
                 <h2>About these terms</h2>
                 <p>This website is operated by WHT Electrical. By using it you accept these terms. If you do not accept them, please do not use the site.</p>
@@ -1288,7 +1260,7 @@ ${['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fenc
 
                 <h2>Enquiries and quotes</h2>
                 <p>Sending an enquiry does not create a booking. Work is only arranged once we have confirmed it with you.</p>
-                <p>Any price we give follows an assessment of the actual work. A quote is binding only once we have issued it in writing and you have accepted it. <span class="wht-confirm">[CONFIRM how long a quote stays valid.]</span></p>
+                <p>Any price we give follows an assessment of the actual work. A quote is binding only once we have issued it in writing and you have accepted it. A quote is valid for 30 days from the date it is issued, unless the quote itself says otherwise.</p>
 
                 <h2>Certificates of compliance</h2>
                 <p>A certificate is issued only where the installation meets the applicable requirements at the time of inspection. Where remedial work is needed first, that work is quoted separately.</p>
@@ -1303,7 +1275,8 @@ ${['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fenc
                 <p>We try to keep the site available and accurate, but we cannot promise it will always be available or free of errors.</p>
 
                 <h2>Liability</h2>
-                <p>As far as the law allows, WHT Electrical is not liable for any loss arising from your use of this website. <span class="wht-confirm">[LEGAL REVIEW: this clause limits liability for the website only. It does not affect your rights in respect of work carried out, which are covered by the agreement for that work.]</span></p>
+                <p>As far as the law allows, WHT Electrical is not liable for any loss arising from your use of this website.</p>
+                <p>This limitation applies to the website only. It does not affect your rights in respect of work WHT carries out for you, which are governed by the agreement for that work and by the Consumer Protection Act where it applies.</p>
 
                 <h2>Governing law</h2>
                 <p>These terms are governed by the laws of South Africa.</p>

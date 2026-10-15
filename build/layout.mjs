@@ -405,10 +405,9 @@ export const footer = (page) => `    </main>
                     <div class="wht-logo wht-logo--light">${logo()}</div>
                     <p class="wht-footer__tag">${SITE.tagline}</p>
                     <p>Electrical, solar, plumbing and property maintenance for residential, commercial and industrial clients.</p>
-                    <div class="wht-socials">
-                        <a href="https://www.facebook.com/REPLACE" aria-label="WHT Electrical on Facebook" target="_blank" rel="noopener">${ic('fb')}</a>
-                        <a href="https://www.instagram.com/REPLACE" aria-label="WHT Electrical on Instagram" target="_blank" rel="noopener">${ic('ig')}</a>
-                    </div>
+                    <!-- Social icons removed: no WHT Facebook or Instagram URL has been
+                         supplied. Put this block back, with the real URLs, when there is
+                         somewhere for them to point. -->
                 </div>
                 <nav aria-labelledby="wht-foot-services">
                     <h2 id="wht-foot-services">Services</h2>

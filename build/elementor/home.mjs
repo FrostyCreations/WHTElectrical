@@ -74,14 +74,7 @@ const waBtn = () =>
         { cls: 'wht-btn wht-btn--wa', external: true, label: 'WhatsApp WHT' });
 
 /* ---------- the page ---------- */
-/* Recent Work and Reviews still hold placeholder scaffolding: three cards
-   reading "Replace with what the client was experiencing", and three
-   five-star reviews reading "Placeholder - paste a genuine Google review".
-   Fine on a staging site, not fine on a homepage customers and Google see.
-   build.mjs emits both: the full template, and a launch template with those
-   two sections omitted so nothing fake can ship. Put them back the moment
-   Wayne supplies the real job details and the real Google reviews. */
-export const build = ({ placeholders = true } = {}) => [
+export const build = () => [
 
     /* SECTION 2 — HERO. The backdrop is one HTML widget so the clip-path,
        the SVG stroke and the video stay byte-identical to the static build. */
@@ -231,53 +224,34 @@ export const build = ({ placeholders = true } = {}) => [
             { cls: 'wht-markets-note', label: 'Markets note' }),
     ]),
 
-    ...(placeholders ? [
-
     /* SECTION 10 — RECENT WORK.
-       Photographs are real WHT jobs; the write-ups are still placeholders
-       and need real job details before launch (Tab 10 template). */
+       Real WHT photographs with factual labels. The per-project write-ups
+       (location, problem, work completed) are out until WHT supplies real
+       job details — Tab 10 template. */
     section({ anchor: 'work', alt: true, label: 'Recent work' }, [
         sectionHead({
             eyebrow: 'Recent work', h2: 'Recent WHT Projects', id: 'wht-work-title',
             lead: 'Real work tells the story better than generic claims. Explore examples of problems WHT has investigated, systems installed and property work completed for clients across Gauteng and South Africa.',
         }),
         box({ cls: 'wht-projects', label: 'Project cards' }, [
-            ['fault-finding-meter.jpg', 576, 384, 'A clamp meter taking a current reading during electrical fault finding', 'Recurring Electrical Trips', 'fault'],
-            ['project-backup-power.jpg', 800, 533, 'An inverter and two lithium batteries mounted on a wall beside the distribution board', 'Backup Power Installation', 'solar'],
-            ['project-gate-motor.jpg', 800, 534, 'A gate motor installed alongside a sliding driveway gate', 'Gate Motor Replacement', 'gate'],
-        ].map(([file, w, h, alt, h3, key]) => box({ cls: 'wht-project', tag: 'article', label: h3 }, [
+            ['fault-finding-meter.jpg', 'A clamp meter taking a current reading during electrical fault finding', 'Electrical Fault Finding', 'fault'],
+            ['project-backup-power.jpg', 'An inverter and two lithium batteries mounted on a wall beside the distribution board', 'Inverter &amp; Battery Backup', 'solar'],
+            ['project-gate-motor.jpg', 'A gate motor installed alongside a sliding driveway gate', 'Gate Motor Installation', 'gate'],
+        ].map(([file, alt, h3, key]) => box({ cls: 'wht-project', tag: 'article', label: h3 }, [
             box({ cls: 'wht-project__media', label: 'Project image' }, [
                 image(`${SITE.domain}/assets/photos/${file}`, alt, { label: 'Photo' }),
             ]),
             box({ cls: 'wht-project__body', label: 'Project body' }, [
-                html(`<span class="wht-project__loc">${ic('pin')} Example project</span>`, { label: 'Location' }),
                 heading(h3, { tag: 'h3', label: 'Project heading' }),
-                html(`<dl>
-    <dt>Problem</dt><dd>Replace with what the client was experiencing.</dd>
-    <dt>Work completed</dt><dd>Replace with what WHT assessed, repaired or installed.</dd>
-</dl>`, { label: 'Problem / work completed — REPLACE' }),
                 arrowLink('Related service', key),
             ]),
         ]))),
     ]),
 
-    /* SECTION 11 — REVIEWS.
-       Tab 5: insert GENUINE Google reviews only, word for word. Once real,
-       add a matching aggregateRating to the business schema. */
-    section({ anchor: 'reviews', label: 'Reviews' }, [
-        sectionHead({
-            eyebrow: 'Reviews', h2: 'What Clients Say About WHT', id: 'wht-reviews-title',
-            lead: 'Finding a contractor you can rely on matters. Read what WHT clients have said about their experience, the work completed and the service they received.',
-        }),
-        box({ cls: 'wht-reviews', label: 'Review cards' },
-            [1, 2, 3].map((n) => box({ cls: 'wht-review', tag: 'figure', label: `Review ${n} — REPLACE` }, [
-                html(`<div class="wht-review__stars" aria-hidden="true">${ic('star').repeat(5)}</div>`, { label: 'Stars' }),
-                text('<blockquote><p>Placeholder &mdash; paste a genuine Google review here, word for word.</p></blockquote>', { label: 'Review text — REPLACE' }),
-                html('<figcaption>Reviewer name<span>Google review</span></figcaption>', { label: 'Reviewer — REPLACE' }),
-            ]))),
-    ]),
-
-    ] : []),
+    /* SECTION 11 — REVIEWS: removed until WHT supplies genuine Google
+       reviews. Tab 5 is explicit that reviews must be real and quoted word
+       for word, so there is nothing to put here in the meantime. Restore
+       the section and add aggregateRating to the business schema together. */
 
     /* SECTION 12 — FAQs. Elementor's Nested Accordion emits the FAQ schema
        itself, so the hand-written FAQPage JSON-LD is no longer needed here. */
