@@ -423,3 +423,7 @@
 .wht-site .wht-faqs .e-n-accordion .e-n-accordion-item:not(:last-child) { margin-bottom: 12px; }
 .wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title,
 .wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title-text { line-height: 1.65; }
+
+/* Elementor caps every widget at max-width:100%, which beats the
+   760px measure .wht-figure gives a captioned photo. */
+.wht-site .elementor-widget-image.wht-figure { max-width: 760px; width: 100%; margin-left: auto; margin-right: auto; }

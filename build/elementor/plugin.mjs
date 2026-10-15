@@ -128,20 +128,49 @@ add_filter('body_class', function ($classes) {
    wp_body_open and wp_footer both fire on the Elementor Canvas page
    template, which skips the theme's own header and footer. So the WHT
    chrome appears with nothing from the theme competing with it.
+
+   The markup is lifted from the static homepage, so it arrives with
+   Home marked as the current page. wht_chrome_mark_current() moves
+   that mark to whichever page is being served.
    --------------------------------------------------------------- */
+function wht_chrome_mark_current($html) {
+    $html = str_replace(' aria-current="page"', '', $html);
+    $path = is_front_page() ? '/' : trailingslashit(wp_parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
+
+    /* Nav and drawer links only, as in the static build: plain links and
+       the indented service children, never the logo or a CTA button. */
+    $html = preg_replace_callback('/<a\\b[^>]*>/', function ($m) use ($path) {
+        $tag = $m[0];
+        if (strpos($tag, 'href="' . $path . '"') === false) return $tag;
+        if (preg_match('/class="([^"]*)"/', $tag, $c) && strpos($c[1], '__child') === false) return $tag;
+        return substr($tag, 0, -1) . ' aria-current="page">';
+    }, $html);
+
+    /* The Services toggle shows the section as current on any service page. */
+    foreach (['/electrical/', '/solar-backup-power/', '/plumbing/', '/property-maintenance/'] as $s) {
+        if (strpos($path, $s) === 0) {
+            $html = str_replace('class="wht-nav__toggle"', 'class="wht-nav__toggle is-section"', $html);
+            break;
+        }
+    }
+    return $html;
+}
+
 add_action('wp_body_open', function () {
     if (is_admin()) return;
-    echo <<<'WHT_HEADER_HTML'
+    $html = <<<'WHT_HEADER_HTML'
 ${skipAndSprite}
 ${header}
 WHT_HEADER_HTML;
+    echo wht_chrome_mark_current($html);
 }, 5);
 
 add_action('wp_footer', function () {
     if (is_admin()) return;
-    echo <<<'WHT_FOOTER_HTML'
+    $html = <<<'WHT_FOOTER_HTML'
 ${footer}
 WHT_FOOTER_HTML;
+    echo wht_chrome_mark_current($html);
 }, 5);
 
 /* ---------------------------------------------------------------
