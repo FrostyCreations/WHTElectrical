@@ -476,3 +476,17 @@
    titled heading inside prose is 26px, not 38px. Section 5 sizes every
    .wht-title heading at 1em of the wrapper; this restores the prose case. */
 .wht-site .wht-prose .elementor-widget-heading.wht-title .elementor-heading-title { font-size: clamp(20px, 2.4vw, 26px); }
+
+/* ---------------------------------------------------------
+   20. Hello Elementor's button reset
+   The theme's reset.css paints every button pink on hover and focus:
+       [type="button"]:hover, button:focus, ... { background-color: #c36 }
+   At (0,2,0) it outranks the WHT icon buttons, which only set their
+   background in the resting state, so "Services", search and the menu
+   button turned pink under the pointer and stayed pink after a click.
+   These restate the WHT backgrounds for both states.
+   --------------------------------------------------------- */
+.wht-site :is(.wht-nav__toggle, .wht-search-toggle, .wht-burger, .wht-search__submit,
+              .wht-search__close, .wht-drawer__close):is(:hover, :focus) { background-color: transparent; }
+.wht-site .wht-totop:focus { background-color: var(--wht-navy); }
+.wht-site .wht-totop:hover { background-color: var(--wht-blue); }

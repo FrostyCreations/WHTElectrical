@@ -203,7 +203,8 @@
 .wht-hero {
     position: relative; color: #fff; overflow: hidden; isolation: isolate;
     background-color: var(--wht-navy-deep);
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 3.5vw));
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - var(--wht-hero-slant)));
+    z-index: 1;
     /* Moved toward the middle so more of the hero video shows. Three constraints
        fix the numbers: the top vertex is free (80% -> 68%, the big reveal); the
        diagonal's lower end must stay at 56%, because at 1025px the copy column
@@ -276,6 +277,14 @@
 
 /* ---------- Trust strip ---------- */
 .wht-trustbar { background: var(--wht-bg-alt); border-bottom: 1px solid var(--wht-line); }
+/* The hero's slanted bottom edge cuts a wedge out of its lower-left corner,
+   which used to show the white page as a band above the trust strip. The
+   strip is pulled up under the hero by the slant's height and padded by the
+   same amount, so its pale blue fills the wedge and nothing else moves.
+   The slant is a variable on .wht-site because the hero and strip are
+   siblings; it changes with the breakpoint below. */
+.wht-site { --wht-hero-slant: 3.5vw; }
+.wht-hero + .wht-trustbar { position: relative; margin-top: calc(-1 * var(--wht-hero-slant)); padding-top: var(--wht-hero-slant); }
 .wht-trustbar ul { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 30px; padding: 26px 0; }
 .wht-trustbar li { display: flex; align-items: center; gap: 11px; font-weight: 600; font-size: 14.5px; color: var(--wht-navy); }
 .wht-trustbar svg { width: 22px; height: 22px; color: var(--wht-blue); flex: none; }
@@ -507,7 +516,7 @@
     /* hero: no room for a bolt — the blue covers the photo as a flat panel.
        .86 lets the real job photograph read through as texture. White headline
        over the brightest part of the photo still measures about 10:1. */
-    .wht-hero { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 6vw)); }
+    .wht-site { --wht-hero-slant: 6vw; }
     .wht-hero__panel { clip-path: none; opacity: .86; }
     .wht-hero__edge { display: none; }
     .wht-hero__media::after { background: linear-gradient(180deg, rgba(30,47,77,.4), rgba(30,47,77,.7)); }
