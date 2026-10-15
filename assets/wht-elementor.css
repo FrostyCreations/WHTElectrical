@@ -391,3 +391,24 @@
 .wht-site .elementor-widget-image.wht-figure .widget-image-caption {
     margin-top: 14px; font-size: 14.5px; color: var(--wht-muted); text-align: center;
 }
+
+/* ---------------------------------------------------------
+   17. Elementor's default container spacing
+   Found by measuring the live import against the static build:
+   every container wht.css does not style itself was getting
+   Elementor's default 20px widget gap and 10px padding. The static
+   build spaces those children with margins, so the defaults stacked
+   on top — the Electrical page came out 564px taller, its page hero
+   alone 132px.
+
+   This zeroes only the DEFAULTS. Elementor reads them through these
+   custom properties, so:
+     - a gap or padding set on an element in the editor still wins
+       (its generated CSS sets the same properties more specifically);
+     - a gap or padding in wht.css still wins (it sets the property
+       itself, not the variable).
+   --------------------------------------------------------- */
+.wht-site .e-con {
+    --gap: 0px; --row-gap: 0px; --column-gap: 0px;
+    --padding-top: 0px; --padding-right: 0px; --padding-bottom: 0px; --padding-left: 0px;
+}
