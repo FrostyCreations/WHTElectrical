@@ -189,7 +189,7 @@ export const build = () => [
            that left it unstyled and every step row about 34px short. */
         box({ cls: 'wht-steps', label: 'Process steps' },
             PROCESS.map(([h3, p], i) => box({ cls: 'wht-step', label: `Step ${i + 1}` }, [
-                html(`<div class="wht-step__num">${i + 1}</div>`, { label: 'Number' }),
+                html(`<div class="wht-step__num" aria-hidden="true">${String(i + 1).padStart(2, '0')}</div>`, { label: 'Number' }),
                 heading(h3, { tag: 'h3', label: 'Step heading' }),
                 text(`<p>${p}</p>`, { label: 'Step text' }),
             ]))),

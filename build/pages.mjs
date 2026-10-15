@@ -15,7 +15,7 @@ const ELECTRICAL = { key: 'electrical', label: 'Electrical' };
 /* Real WHT job photographs. The files live in assets/photos and were cropped to
    the aspect of the slot they fill, so the width/height below are the true pixel
    sizes of each file. Alt text describes what is actually in the frame. */
-const PHOTO = {
+export const PHOTO = {
     hero:        ['hero-solar-roof.jpg',          1280, 720, ''],
     electrical:  ['electrical-technician.jpg',     800, 533, 'A WHT electrician beside a newly installed surface conduit run with isolators and junction boxes'],
     solar:       ['solar-inverter-battery.jpg',    800, 534, 'Wall-mounted inverter and two lithium battery units installed under a thatched roof'],
@@ -37,7 +37,7 @@ const photo = (key, { lazy = true, alt, extra = '' } = {}) => {
 /* ---------- Reusable approved copy ---------- */
 
 /* Homepage "How it works" — reused on pillar pages that have no process copy of their own. */
-const PROCESS_GENERAL = [
+export const PROCESS_GENERAL = [
     ['Tell Us About the Problem', 'Explain what is happening, what service you need and where the property is located.'],
     ['Assessment', 'The relevant system, installation or project requirements are assessed.'],
     ['Recommended Solution', 'WHT explains what has been identified and what work is recommended.'],
@@ -46,7 +46,7 @@ const PROCESS_GENERAL = [
 ];
 
 /* Homepage problem-card and service-card copy, reused as cross-links on inner pages. */
-const CARD = {
+export const CARD = {
     electrical:  ['bolt', 'electrical', 'Electrical', 'From everyday electrical repairs and installations to DB boards, rewiring, fault finding, generator connections and COCs.', 'Explore Electrical'],
     solar:       ['solar', 'solar', 'Solar &amp; Backup Power', 'Solar installations, inverters, battery backup, hybrid systems and off-grid power solutions.', 'Explore Solar &amp; Backup Power'],
     plumbing:    ['droplet', 'plumbing', 'Plumbing', 'Leaks, burst pipes, geysers, kitchen and bathroom plumbing and general repairs.', 'Explore Plumbing'],

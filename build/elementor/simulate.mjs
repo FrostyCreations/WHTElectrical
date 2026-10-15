@@ -66,8 +66,11 @@ const WIDGETS = {
     image(el) {
         const im = el.settings.image || {};
         const alt = (im.alt || '').replace(/"/g, '&quot;');
-        return wrapWidget(el, 'image',
-            `<img src="${im.url || ''}" alt="${alt}" loading="lazy" decoding="async">`);
+        const img = `<img src="${im.url || ''}" alt="${alt}" loading="lazy" decoding="async">`;
+        /* A custom caption makes Elementor wrap the image in a figure. */
+        return wrapWidget(el, 'image', el.settings.caption_source === 'custom'
+            ? `<figure class="wp-caption">${img}<figcaption class="widget-image-caption wp-caption-text">${el.settings.caption}</figcaption></figure>`
+            : img);
     },
 
     html(el) {

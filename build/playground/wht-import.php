@@ -49,6 +49,23 @@ add_action('init', function () {
 }, 1);
 
 /* ---------------------------------------------------------------
+   Serve the static build at /__static/... on the same origin, so a
+   page can load both versions in iframes and compare them element by
+   element. Cross-origin, the comparison could not read either DOM.
+   --------------------------------------------------------------- */
+add_action('init', function () {
+    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+    if (strpos($uri, '/__static/') !== 0) return;
+    $rel = trim(substr($uri, strlen('/__static/')), '/');
+    if (strpos($rel, '..') !== false) return;
+    $file = '/wordpress/wp-content/wht/dist-wp/' . ($rel === '' ? '' : $rel . '/') . 'index.html';
+    if (!file_exists($file)) return;
+    header('Content-Type: text/html; charset=utf-8');
+    readfile($file);
+    exit;
+}, 1);
+
+/* ---------------------------------------------------------------
    What is this Elementor?
    --------------------------------------------------------------- */
 add_action('init', function () {
@@ -87,12 +104,23 @@ add_action('init', function () {
 
     /* Pages first, then the chrome, so the front page exists before
        the templates are assigned to it. */
+    /* Slugs and parents give the Tab 2 permalinks, so /electrical/coc/
+       here is the same URL as on the live site. Parents come first. */
     $files = [
-        'wht-home.json'    => ['title' => 'Home',    'slug' => 'home',    'front' => true],
-        'wht-contact.json' => ['title' => 'Contact', 'slug' => 'contact', 'front' => false],
-        'wht-home-launch.json' => ['title' => 'Home (launch)', 'slug' => 'home-launch', 'front' => false],
-        'wht-header.json'  => ['chrome' => true],
-        'wht-footer.json'  => ['chrome' => true],
+        'wht-home.json'        => ['title' => 'Home',                            'slug' => 'home', 'front' => true],
+        'wht-electrical.json'  => ['title' => 'Electrical',                      'slug' => 'electrical'],
+        'wht-fault.json'       => ['title' => 'Fault Finding & Repairs',         'slug' => 'fault-finding-repairs', 'parent' => 'electrical'],
+        'wht-coc.json'         => ['title' => 'Electrical COCs',                 'slug' => 'coc', 'parent' => 'electrical'],
+        'wht-gate.json'        => ['title' => 'Gate Motors & Electric Fencing',  'slug' => 'gate-motors-electric-fencing', 'parent' => 'electrical'],
+        'wht-solar.json'       => ['title' => 'Solar & Backup Power',            'slug' => 'solar-backup-power'],
+        'wht-plumbing.json'    => ['title' => 'Plumbing',                        'slug' => 'plumbing'],
+        'wht-maintenance.json' => ['title' => 'Property Maintenance',            'slug' => 'property-maintenance'],
+        'wht-about.json'       => ['title' => 'About',                           'slug' => 'about'],
+        'wht-contact.json'     => ['title' => 'Contact',                         'slug' => 'contact'],
+        'wht-privacy.json'     => ['title' => 'Privacy Policy',                  'slug' => 'privacy-policy'],
+        'wht-terms.json'       => ['title' => 'Terms',                           'slug' => 'terms'],
+        'wht-header.json'      => ['chrome' => true],
+        'wht-footer.json'      => ['chrome' => true],
     ];
 
     foreach ($files as $file => $opt) {
@@ -113,13 +141,22 @@ add_action('init', function () {
             continue;
         }
 
-        /* Build a real page from the imported template. */
-        $page = wp_insert_post([
+        /* Build a real page from the imported template. Re-running the
+           import updates the same page rather than adding a duplicate. */
+        $parent   = !empty($opt['parent']) ? get_page_by_path($opt['parent']) : null;
+        $existing = get_page_by_path(($parent ? $opt['parent'] . '/' : '') . $opt['slug']);
+        $page = $existing ? $existing->ID : wp_insert_post([
             'post_title'  => $opt['title'],
             'post_name'   => $opt['slug'],
+            'post_parent' => $parent ? $parent->ID : 0,
             'post_status' => 'publish',
             'post_type'   => 'page',
         ]);
+        /* WordPress ships a DRAFT page at /privacy-policy/, which the lookup
+           above finds. Publish whatever was reused. */
+        if ($existing && $existing->post_status !== 'publish') {
+            wp_update_post(['ID' => $page, 'post_status' => 'publish', 'post_title' => $opt['title']]);
+        }
         update_post_meta($page, '_elementor_data', wp_slash($data));
         update_post_meta($page, '_elementor_edit_mode', 'builder');
         update_post_meta($page, '_wp_page_template', 'elementor_canvas');

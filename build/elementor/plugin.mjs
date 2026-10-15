@@ -19,6 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ROUTES } from '../layout.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = join(root, 'dist-wp', 'index.html');
@@ -49,6 +50,32 @@ for (const [name, markup] of [['HEADER', skipAndSprite + '\n' + header], ['FOOTE
     if (new RegExp(`^WHT_${name}_HTML;`, 'm').test(markup)) {
         throw new Error(`markup contains the ${name} nowdoc terminator`);
     }
+}
+
+/* Pages the importer offers, parents before children. Slugs and parents
+   give the Tab 2 permalinks (ROUTES in layout.mjs). Contact imports as a
+   draft: its form is a placeholder that does not send (STATE.md). */
+const PAGES = [
+    { file: 'wht-home.json', title: 'Home', slug: 'home', front: true },
+    { file: 'wht-electrical.json', title: 'Electrical', slug: 'electrical' },
+    { file: 'wht-fault.json', title: 'Fault Finding & Repairs', slug: 'fault-finding-repairs', parent: 'electrical' },
+    { file: 'wht-coc.json', title: 'Electrical COCs', slug: 'coc', parent: 'electrical' },
+    { file: 'wht-gate.json', title: 'Gate Motors & Electric Fencing', slug: 'gate-motors-electric-fencing', parent: 'electrical' },
+    { file: 'wht-solar.json', title: 'Solar & Backup Power', slug: 'solar-backup-power' },
+    { file: 'wht-plumbing.json', title: 'Plumbing', slug: 'plumbing' },
+    { file: 'wht-maintenance.json', title: 'Property Maintenance', slug: 'property-maintenance' },
+    { file: 'wht-about.json', title: 'About', slug: 'about' },
+    { file: 'wht-contact.json', title: 'Contact', slug: 'contact', draft: true },
+    { file: 'wht-privacy.json', title: 'Privacy Policy', slug: 'privacy-policy' },
+    { file: 'wht-terms.json', title: 'Terms', slug: 'terms' },
+];
+
+/* Every permalink must match the static build's, or links between pages break. */
+for (const p of PAGES) {
+    const key = p.file.replace(/^wht-|\.json$/g, '');
+    const want = ROUTES[key].wp;
+    const got = p.front ? '/' : `/${p.parent ? p.parent + '/' : ''}${p.slug}/`;
+    if (want !== got) throw new Error(`${p.file}: importer would create ${got}, the site links to ${want}`);
 }
 
 const php = `<?php
@@ -118,40 +145,64 @@ WHT_FOOTER_HTML;
 }, 5);
 
 /* ---------------------------------------------------------------
-   One-click homepage import.
+   One-click page import.
 
-   Tools -> WHT Homepage. Imports the bundled Elementor template
-   through Elementor's own importer, builds a page from it, sets the
-   Elementor Canvas template and makes it the front page.
+   Tools -> WHT Pages. Imports each bundled Elementor template through
+   Elementor's own importer, builds the page from it at its Tab 2
+   permalink, and sets the Elementor Canvas template.
 
    Doing it here rather than through Templates -> Import matters for
    one reason: the header carries an inline SVG sprite of 37 icons, and
    WordPress strips every <svg> from anyone without unfiltered_html.
    This checks the capability up front and says so, instead of
    importing successfully and silently losing every icon.
+
+   Re-importing a page REPLACES its content, so any edits made to it in
+   Elementor are lost. "Import all new pages" therefore only touches
+   pages that do not exist yet; a page that does exist has to be
+   re-imported on purpose, from its own button.
    --------------------------------------------------------------- */
+function wht_chrome_pages() {
+    return json_decode(<<<'WHT_PAGES_JSON'
+${JSON.stringify(PAGES, null, 1)}
+WHT_PAGES_JSON, true);
+}
+
 add_action('admin_menu', function () {
-    add_management_page('WHT Homepage', 'WHT Homepage', 'manage_options', 'wht-homepage', 'wht_chrome_admin_page');
+    /* Slug kept from the homepage-only version, so old links still work. */
+    add_management_page('WHT Pages', 'WHT Pages', 'manage_options', 'wht-homepage', 'wht_chrome_admin_page');
 });
+
+/* The page at this entry's permalink, whatever its status. */
+function wht_chrome_find($p) {
+    return get_page_by_path((!empty($p['parent']) ? $p['parent'] . '/' : '') . $p['slug'], OBJECT, 'page');
+}
 
 function wht_chrome_admin_page() {
     if (!current_user_can('manage_options')) wp_die('Not allowed.');
-
-    $tpl_file = plugin_dir_path(__FILE__) . 'wht-home.json';
-    echo '<div class="wrap"><h1>WHT Homepage</h1>';
-
-    if (isset($_POST['wht_do_import']) && check_admin_referer('wht_import')) {
-        echo '<div class="notice notice-info"><p>' . esc_html(wht_chrome_import($tpl_file)) . '</p></div>';
-    }
+    $pages = wht_chrome_pages();
+    $dir   = plugin_dir_path(__FILE__);
+    echo '<div class="wrap"><h1>WHT Pages</h1>';
 
     if (!did_action('elementor/loaded')) {
         echo '<div class="notice notice-error"><p>Elementor is not active.</p></div></div>';
         return;
     }
-    if (!file_exists($tpl_file)) {
-        echo '<div class="notice notice-error"><p>Template file missing: ' . esc_html($tpl_file) . '</p></div></div>';
-        return;
+
+    if ((isset($_POST['wht_import_one']) || isset($_POST['wht_import_new'])) && check_admin_referer('wht_import')) {
+        $todo = [];
+        if (isset($_POST['wht_import_one'])) {
+            $f = sanitize_file_name(wp_unslash($_POST['wht_import_one']));
+            foreach ($pages as $p) if ($p['file'] === $f) $todo[] = $p;
+        } else {
+            foreach ($pages as $p) if (empty($p['front']) && !wht_chrome_find($p)) $todo[] = $p;
+        }
+        if (!$todo) echo '<div class="notice notice-info"><p>Nothing to import: every page already exists.</p></div>';
+        foreach ($todo as $p) {
+            echo '<div class="notice notice-info"><p>' . esc_html(wht_chrome_import($p, $dir . $p['file'])) . '</p></div>';
+        }
     }
+
     if (!current_user_can('unfiltered_html')) {
         echo '<div class="notice notice-warning"><p><strong>Warning:</strong> your user lacks the '
            . '<code>unfiltered_html</code> capability. WordPress will strip the 37-icon SVG sprite '
@@ -159,60 +210,95 @@ function wht_chrome_admin_page() {
            . 'some security plugins remove it. Fix that before importing.</p></div>';
     }
 
-    echo '<p>Imports the homepage template, creates the page with the Elementor Canvas '
-       . 'layout and sets it as the front page. Safe to run again &mdash; it updates the same page.</p>';
+    echo '<p>Each page is built from the WHT template with the Elementor Canvas layout. '
+       . '<strong>Re-importing a page replaces its content</strong>, including any edits made in Elementor.</p>';
     echo '<form method="post">';
     wp_nonce_field('wht_import');
-    submit_button('Import the homepage', 'primary', 'wht_do_import');
+    echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th>Page</th><th>Address</th><th>Status</th><th></th></tr></thead><tbody>';
+    foreach ($pages as $p) {
+        $page = wht_chrome_find($p);
+        $path = '/' . (!empty($p['parent']) ? $p['parent'] . '/' : '') . $p['slug'] . '/';
+        if (!empty($p['front'])) $path = '/';
+        $status = $page ? esc_html($page->post_status) . (get_post_meta($page->ID, '_elementor_data', true) ? '' : ' (not built with Elementor)') : 'not created';
+        $missing = !file_exists($dir . $p['file']);
+        echo '<tr><td>' . esc_html($p['title']) . (!empty($p['draft']) ? ' <em>(imports as a draft)</em>' : '') . '</td>'
+           . '<td><code>' . esc_html($path) . '</code></td><td>' . $status . '</td><td>';
+        if ($missing) echo 'template file missing';
+        else echo '<button class="button" name="wht_import_one" value="' . esc_attr($p['file']) . '"'
+           . ($page ? ' onclick="return confirm(\\'Replace the content of ' . esc_js($p['title']) . '? Edits made in Elementor will be lost.\\')"' : '')
+           . '>' . ($page ? 'Re-import' : 'Import') . '</button>';
+        echo '</td></tr>';
+    }
+    echo '</tbody></table>';
+    submit_button('Import all new pages', 'primary', 'wht_import_new');
+    echo '<p class="description">Creates the pages that do not exist yet. Never touches the homepage or a page that already exists.</p>';
     echo '</form></div>';
 }
 
-function wht_chrome_import($file) {
+function wht_chrome_import($p, $file) {
     $res = \\Elementor\\Plugin::$instance->templates_manager->import_template([
         'fileData' => base64_encode(file_get_contents($file)),
         'fileName' => basename($file),
     ]);
-    if (is_wp_error($res)) return 'Import failed: ' . $res->get_error_message();
+    if (is_wp_error($res)) return $p['title'] . ': import failed: ' . $res->get_error_message();
 
     $tpl = is_array($res) && isset($res[0]['template_id']) ? $res[0]['template_id'] : null;
-    if (!$tpl) return 'Import returned no template id.';
+    if (!$tpl) return $p['title'] . ': import returned no template id.';
     $data = get_post_meta($tpl, '_elementor_data', true);
 
-    /* Reuse the page if this has been run before, so repeated runs do not
-       leave a trail of duplicate home pages. */
-    $existing = get_page_by_path('home');
-    $page = $existing ? $existing->ID : wp_insert_post([
-        'post_title'  => 'Home',
-        'post_name'   => 'home',
-        'post_status' => 'publish',
-        'post_type'   => 'page',
-    ]);
+    $parent = 0;
+    if (!empty($p['parent'])) {
+        $pp = get_page_by_path($p['parent'], OBJECT, 'page');
+        if (!$pp) return $p['title'] . ': import its parent page first (' . $p['parent'] . ').';
+        $parent = $pp->ID;
+    }
+
+    /* Reuse the page if it exists, so repeated runs do not leave
+       duplicates. WordPress ships a draft at /privacy-policy/, which
+       this picks up and publishes. */
+    $status   = !empty($p['draft']) ? 'draft' : 'publish';
+    $existing = wht_chrome_find($p);
+    if ($existing) {
+        $page = $existing->ID;
+        if ($existing->post_status !== 'publish') {
+            wp_update_post(['ID' => $page, 'post_status' => $status, 'post_title' => $p['title']]);
+        }
+    } else {
+        $page = wp_insert_post([
+            'post_title'  => $p['title'],
+            'post_name'   => $p['slug'],
+            'post_parent' => $parent,
+            'post_status' => $status,
+            'post_type'   => 'page',
+        ]);
+    }
 
     update_post_meta($page, '_elementor_data', wp_slash($data));
     update_post_meta($page, '_elementor_edit_mode', 'builder');
     update_post_meta($page, '_wp_page_template', 'elementor_canvas');
     if (defined('ELEMENTOR_VERSION')) update_post_meta($page, '_elementor_version', ELEMENTOR_VERSION);
 
-    update_option('show_on_front', 'page');
-    update_option('page_on_front', $page);
+    if (!empty($p['front'])) {
+        update_option('show_on_front', 'page');
+        update_option('page_on_front', $page);
+    }
 
     \\Elementor\\Plugin::$instance->files_manager->clear_cache();
 
     $svg = substr_count((string) $data, '<svg');
-    return sprintf(
-        'Imported. Template #%d, page #%d, now the front page. %d SVG elements survived%s',
-        $tpl, $page, $svg,
-        $svg ? '.' : ' - that is the unfiltered_html problem; fix the capability and run again.'
-    );
+    return sprintf('%s: imported as page #%d (%s), %d SVG elements%s',
+        $p['title'], $page, get_post_status($page), $svg,
+        ($svg || strpos(file_get_contents($file), '<svg') === false) ? '.' : ' - expected some; that is the unfiltered_html problem.');
 }
 `;
 
 const outDir = join(root, 'dist-plugin', 'wht-chrome');
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'wht-chrome.php'), php);
-/* The template travels inside the plugin, so the import needs no file upload. */
-writeFileSync(join(outDir, 'wht-home.json'),
-    readFileSync(join(root, 'dist-elementor', 'wht-home.json'), 'utf8'));
+/* The templates travel inside the plugin, so the import needs no file upload. */
+for (const p of PAGES) {
+    writeFileSync(join(outDir, p.file), readFileSync(join(root, 'dist-elementor', p.file), 'utf8'));
+}
 
 const count = (s, re) => (s.match(re) || []).length;
 console.log('wrote dist-plugin/wht-chrome/wht-chrome.php\n');

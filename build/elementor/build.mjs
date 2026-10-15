@@ -21,9 +21,21 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const outDir = join(root, 'dist-elementor');
 mkdirSync(outDir, { recursive: true });
 
+/* slug is both the template file name and the pages.mjs key. `pick`
+   names the export when one module holds more than one page. */
 const PAGES = [
     { slug: 'home', module: './home.mjs' },
+    { slug: 'electrical', module: './electrical.mjs' },
+    { slug: 'fault', module: './fault.mjs' },
+    { slug: 'coc', module: './coc.mjs' },
+    { slug: 'gate', module: './gate.mjs' },
+    { slug: 'solar', module: './solar.mjs' },
+    { slug: 'plumbing', module: './plumbing.mjs' },
+    { slug: 'maintenance', module: './maintenance.mjs' },
+    { slug: 'about', module: './about.mjs' },
     { slug: 'contact', module: './contact.mjs' },
+    { slug: 'privacy', module: './legal.mjs', pick: 'privacy' },
+    { slug: 'terms', module: './legal.mjs', pick: 'terms' },
 ];
 
 /* Theme Builder templates. Elementor keys these off the template `type`,
@@ -44,10 +56,10 @@ const census = (content) => {
 let failed = false;
 const built = {};
 
-for (const { slug, module } of PAGES) {
+for (const { slug, module, pick } of PAGES) {
     let page;
-    try { page = await import(module); }
-    catch (e) { console.log(`  skip ${slug}: ${e.message.split('\n')[0]}`); continue; }
+    try { page = await import(module); if (pick) page = page[pick]; }
+    catch (e) { console.error(`  FAIL ${slug}: ${e.message.split('\n')[0]}`); failed = true; continue; }
 
     /* Ids are derived from the page slug, so rebuilding does not churn
        every id in every file and the diffs stay readable. */
@@ -90,12 +102,17 @@ for (const c of CHROME) {
 
 /* A full-page simulation: header + page + footer, which is what the live page
    actually is. Checking the page on its own would miss the chrome entirely. */
-for (const slug of ['home', 'contact']) {
+for (const { slug } of PAGES) {
     if (!built[slug] || !built.header || !built.footer) continue;
     const whole = [...built.header, ...built[slug], ...built.footer];
     writeFileSync(join(root, `_elementor-sim-full-${slug}.html`), renderPage(whole, `full ${slug}`));
-    console.log(`  full-${slug.padEnd(6)} header + page + footer`);
 }
+console.log(`  full-*     header + page + footer, ${PAGES.length} pages`);
+
+/* Every piece of approved copy on the static page must reach the template,
+   and nothing may appear in the template that the static page lacks. */
+const { checkCopy } = await import('./check-copy.mjs');
+if (!checkCopy(PAGES.map((p) => p.slug), built)) failed = true;
 
 console.log(`\n→ dist-elementor/*.json   (Elementor → Templates → Import)`);
 console.log(`→ _elementor-sim-*.html   (serve the project root to view)`);

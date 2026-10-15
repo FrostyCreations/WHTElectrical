@@ -36,6 +36,7 @@ on:
     branches: [main]
     paths:
       - 'assets/**'
+      - 'build/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
@@ -151,15 +152,17 @@ jobs:
       # ---------------------------------------------------------------
       # The site-chrome plugin. Elementor's Theme Builder needs Pro, which
       # the site does not have, so the header and footer ship as a plain
-      # plugin instead. It carries the homepage template with it, so the
-      # import needs no file upload.
+      # plugin instead. It carries every page template with it, so the
+      # import (Tools -> WHT Pages) needs no file upload.
       # ---------------------------------------------------------------
       - name: Build the chrome plugin
         run: |
           node build/elementor/build.mjs
           node build/elementor/plugin.mjs
           test -f dist-plugin/wht-chrome/wht-chrome.php
-          test -f dist-plugin/wht-chrome/wht-home.json
+          for f in home electrical fault coc gate solar plumbing maintenance about contact privacy terms; do
+            test -f dist-plugin/wht-chrome/wht-$f.json || { echo "::error::wht-$f.json missing from the plugin"; exit 1; }
+          done
           grep -c '<symbol' dist-plugin/wht-chrome/wht-chrome.php | xargs -I{} echo "  sprite symbols in plugin: {}"
 
       - name: Upload the plugin over SFTP
@@ -173,7 +176,7 @@ jobs:
             echo "-mkdir public_html/wp-content/plugins"
             echo "-mkdir $P"
             echo "put dist-plugin/wht-chrome/wht-chrome.php $P/"
-            echo "put dist-plugin/wht-chrome/wht-home.json $P/"
+            for f in dist-plugin/wht-chrome/*.json; do echo "put $f $P/"; done
             echo "bye"
           } > /tmp/plugin.sftp
           cat /tmp/plugin.sftp

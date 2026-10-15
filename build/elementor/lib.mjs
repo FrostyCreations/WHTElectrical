@@ -202,7 +202,10 @@ export const spacer = (h, o = {}) => widget('spacer', common(o, { space: px(h), 
 export const html = (code, o = {}) => widget('html', common(o, { html: code }));
 export const shortcode = (code = '', o = {}) => widget('shortcode', common(o, { shortcode: code }));
 export const map = (address, o = {}) => widget('google_maps', common(o, { address, zoom: px(o.zoom ?? 15), height: px(o.h ?? 320) }));
-export const image = (url, alt, o = {}) => widget('image', common(o, { image: { url, id: '', alt }, image_size: 'full' }));
+export const image = (url, alt, o = {}) => widget('image', common(o, {
+    image: { url, id: '', alt }, image_size: 'full',
+    ...(o.caption ? { caption_source: 'custom', caption: o.caption } : {}),
+}));
 
 /* Large windows: Elementor's sizes are fixed pixels, so above 1600px the page is scaled up in small
    steps (the zoom rules below) at the same rate the HTML sites grow. Without this the layout stays
