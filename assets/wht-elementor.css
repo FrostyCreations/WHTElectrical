@@ -429,3 +429,43 @@
    — the class is doubled on purpose to win — which beats the 760px
    measure .wht-figure gives a captioned photo. Doubled here too. */
 .wht-site .e-con > .elementor-widget-image.wht-figure.wht-figure { max-width: 760px; width: 100%; margin-left: auto; margin-right: auto; }
+
+/* ---------------------------------------------------------
+   19. Elementor's global fonts and text colour
+   Found on the live site: the default Elementor kit sets Roboto
+   (weight 600) on every heading and text widget, and #7A7A7A on
+   every Text Editor, straight onto the widget. That outranks wht.css,
+   so the whole site — homepage included — rendered in Roboto.
+
+   Elementor reads all of these through the kit's --e-global-*
+   variables. Redeclaring them on WHT containers (custom properties
+   inherit, so this covers every widget inside) fixes it without
+   touching the kit, which Wayne may want for other pages:
+     - headings get the WHT heading face and weight;
+     - text, accent and the text colour are set to `initial`, which
+       makes Elementor's declarations invalid at computed-value time,
+       so the widget simply inherits what wht.css gives its context.
+   --------------------------------------------------------- */
+.wht-site .e-con {
+    --e-global-typography-primary-font-family: 'Exo 2';
+    --e-global-typography-primary-font-weight: 800;
+    --e-global-typography-secondary-font-family: 'Exo 2';
+    --e-global-typography-secondary-font-weight: 800;
+    --e-global-typography-text-font-family: initial;
+    --e-global-typography-text-font-weight: initial;
+    --e-global-typography-accent-font-family: initial;
+    --e-global-typography-accent-font-weight: initial;
+    --e-global-color-text: initial;
+}
+
+/* Text classes that sit on the widget wrapper lose to Elementor's own
+   wrapper rule, which now inherits; restated here. */
+.wht-site .elementor-widget-text-editor.wht-lead { color: var(--wht-muted); }
+.wht-site .elementor-widget-text-editor.wht-note,
+.wht-site .elementor-widget-text-editor.wht-markets-note { color: var(--wht-navy); font-weight: 500; }
+.wht-site .elementor-widget-text-editor.wht-step__lead { font-weight: 500; }
+
+/* Headings that are not the 800 default. */
+.wht-site .elementor-widget-heading.wht-eyebrow .elementor-heading-title { font-family: var(--wht-font-head); font-weight: 700; }
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title-text { font-family: var(--wht-font-head); font-weight: 700; }
+.wht-site .elementor-widget-image.wht-figure .widget-image-caption { line-height: 1.65; }
