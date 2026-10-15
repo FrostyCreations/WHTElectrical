@@ -412,3 +412,14 @@
     --gap: 0px; --row-gap: 0px; --column-gap: 0px;
     --padding-top: 0px; --padding-right: 0px; --padding-bottom: 0px; --padding-left: 0px;
 }
+
+/* ---------------------------------------------------------
+   18. FAQ item spacing
+   Also found on the live import: Elementor's accordion CSS zeroes the
+   margin between items (every FAQ block came out 77px short) and sets
+   a tighter line height on the question. Restated at a specificity
+   that beats its :not(:last-child) rule.
+   --------------------------------------------------------- */
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item:not(:last-child) { margin-bottom: 12px; }
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title,
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title-text { line-height: 1.65; }
