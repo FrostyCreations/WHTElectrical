@@ -159,7 +159,7 @@ jobs:
           node build/elementor/build.mjs
           node build/elementor/plugin.mjs
           test -f dist-plugin/wht-chrome/wht-chrome.php
-          test -f dist-plugin/wht-chrome/wht-home-launch.json
+          test -f dist-plugin/wht-chrome/wht-home.json
           grep -c '<symbol' dist-plugin/wht-chrome/wht-chrome.php | xargs -I{} echo "  sprite symbols in plugin: {}"
 
       - name: Upload the plugin over SFTP
@@ -173,7 +173,7 @@ jobs:
             echo "-mkdir public_html/wp-content/plugins"
             echo "-mkdir $P"
             echo "put dist-plugin/wht-chrome/wht-chrome.php $P/"
-            echo "put dist-plugin/wht-chrome/wht-home-launch.json $P/"
+            echo "put dist-plugin/wht-chrome/wht-home.json $P/"
             echo "bye"
           } > /tmp/plugin.sftp
           cat /tmp/plugin.sftp
