@@ -1,7 +1,7 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 15 October 2026.
+Last updated: 15 October 2026 (ten inner pages live).
 
 ---
 
@@ -10,12 +10,19 @@ Last updated: 15 October 2026.
 **https://whtelectrical.co.za** — WordPress, Hello Elementor theme, free
 Elementor (no Pro; the licence key needs reissuing).
 
-- **Homepage is live** as a native Elementor page: 11 sections, 95 editable
-  widgets. Verified — bolt hero with video playing, 37 icons, no broken images.
-- **Nothing else is live.** `/about/`, `/services/`, `/contact/` and 10 old blog
-  posts 404. The old site's content was already gone from the database before
-  any of this work (only "Sample Page" remained), so this was not caused by the
-  migration — but those 35 indexed URLs are still dead.
+- **Behind a maintenance-mode plugin.** Logged-out visitors get "WHT Electrical
+  is under maintenance". Everything below is only visible when logged in.
+- **11 pages published** as native Elementor pages at their Tab 2 permalinks:
+  Home, Electrical, Fault Finding, COCs, Gate Motors, Solar, Plumbing, Property
+  Maintenance, About, Privacy Policy, Terms. **Contact is imported as a draft**
+  (its form does not send — item 4).
+- Verified on the live site, logged in: every text style sampled on all ten
+  new pages matches the static build exactly; page heights within 1–3%; all
+  icons resolve; no broken images; no horizontal scroll at 375px.
+- **The live homepage is an older import.** It lacks the Recent Work section
+  and numbers its steps 1–5. Tools → WHT Pages → Re-import fixes both, but
+  overwrites any edits made to Home in Elementor — check with WHT first.
+- The 35 old indexed URLs (`/services/`, 10 blog posts …) still 404 — item 3.
 - Assets serve from `/assets/` — CSS, JS, 10 photos, hero video, og-image.
 
 ## How it fits together
@@ -33,18 +40,20 @@ build/pages.mjs + layout.mjs   source of truth for all copy (Tab 5 approved)
 **wht-chrome** is a WordPress plugin that does what Elementor Pro's Theme
 Builder would: enqueues the CSS/JS, adds the `.wht-site` body class, prints the
 header and footer on `wp_body_open` / `wp_footer`, and provides
-**Tools → WHT Homepage**, a one-click importer.
+**Tools → WHT Pages**: one row per page, "Import all new pages" (never touches
+Home or an existing page), and a Re-import button per page that replaces its
+content. It also moves the nav's current-page mark to the page being served.
 
 ### Commands
 
 ```bash
 node build/build.mjs                  # local preview pages
 node build/build.mjs --wp --prod      # dist-wp, crawlable robots + sitemap
-node build/elementor/build.mjs        # Elementor JSON + DOM simulations
+node build/elementor/build.mjs        # Elementor JSON + sims + copy-parity check
 node build/elementor/plugin.mjs       # the WordPress plugin
 ```
 
-Pushing to `main` with changes under `assets/**` deploys assets and the plugin
+Pushing to `main` with changes under `assets/**` or `build/**` deploys assets and the plugin
 over SFTP. Secrets: `XNEELO_FTP_SERVER`, `XNEELO_FTP_USERNAME`,
 `XNEELO_FTP_PASSWORD`. SFTP on port 22 — the server rejects FTPS on 21.
 
@@ -69,19 +78,28 @@ over SFTP. Secrets: `XNEELO_FTP_SERVER`, `XNEELO_FTP_USERNAME`,
 7. **Elementor Pro cannot be installed in WordPress Playground**, so Theme
    Builder templates cannot be tested there. That is why the header and footer
    ship as a plugin.
-8. Node's `fetch` fails here where curl works — Playground needs
+8. **Elementor's default kit sets Roboto 600 and #7A7A7A** on every heading and
+   text widget, outranking wht.css. Fixed by redeclaring the kit's
+   `--e-global-*` variables on WHT containers (bridge §19), not in the kit.
+9. **Elementor adds a 20px gap and 10px padding** to every container wht.css
+   does not style. Zeroed through its custom properties (bridge §17).
+10. **A class on a widget wrapper loses to Elementor's wrapper rules** for
+   inherited properties (colour, weight). Put the class on the inner `<p>`
+   where possible (`paras()` does), or restate it in the bridge.
+11. **The DOM simulation does not model Elementor's own CSS** — it placed the
+   page hero 208px off. Check against the real page: match text runs by
+   content and compare computed styles at 1440px, static vs live.
+12. **WordPress ships a draft page at /privacy-policy/.** The importer reuses
+   and publishes it.
+13. Node's `fetch` fails here where curl works — Playground needs
    `NODE_OPTIONS=--network-family-autoselection-attempt-timeout=3000`.
 
 ---
 
 ## Outstanding, roughly in priority order
 
-1. **Ten more Elementor page templates** — Electrical, Fault Finding, COCs,
-   Gate Motors, Solar, Plumbing, Property Maintenance, About, Privacy, Terms.
-   All are built from the same eight section builders, so the work is: add the
-   remaining helpers to `build/elementor/sections.mjs` (bullets, slist, steps,
-   related, callout, faqs, ctaBand, prose), then one thin module per page.
-   Home and Contact are the worked examples.
+1. **Launch decisions for WHT:** turn off maintenance mode, and whether to
+   re-import Home (see above).
 2. **Head-level SEO.** The move to WordPress lost it: no meta description, no
    og:title/og:image, no LocalBusiness or BreadcrumbList schema, and the title
    is just "WHT Electrical". FAQPage schema survived because Elementor's Nested
