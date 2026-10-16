@@ -101,6 +101,33 @@ const WIDGETS = {
         return wrapWidget(el, 'nested-accordion', `<div class="e-n-accordion">\n${items}\n</div>`);
     },
 
+    /* Elementor Pro's Form, rendered with Elementor's own field markup so the
+       WHT form styles in wht-elementor.css can be checked against it. */
+    form(el) {
+        const s = el.settings;
+        const label = (f) => f.field_label
+            ? `<label for="form-field-${f.custom_id}" class="elementor-field-label">${f.field_label}</label>` : '';
+        const control = (f) => {
+            const attrs = `name="form_fields[${f.custom_id}]" id="form-field-${f.custom_id}"${f.required ? ' required="required"' : ''}`;
+            if (f.field_type === 'textarea') return `<textarea class="elementor-field elementor-field-textual elementor-size-${s.input_size}" ${attrs} rows="${f.rows || 4}"></textarea>`;
+            if (f.field_type === 'select') return `<div class="elementor-field elementor-select-wrapper"><select class="elementor-field-textual elementor-size-${s.input_size}" ${attrs}>${
+                f.field_options.split('\n').map((o) => { const [l, v = l] = o.split('|'); return `<option value="${v}">${l}</option>`; }).join('')}</select></div>`;
+            if (f.field_type === 'upload') return `<input type="file" class="elementor-field elementor-size-${s.input_size} elementor-upload-field" ${attrs}>`;
+            return `<input type="${f.field_type}" class="elementor-field elementor-size-${s.input_size} elementor-field-textual" ${attrs}>`;
+        };
+        const groups = s.form_fields.map((f) => f.field_type === 'honeypot'
+            ? `<div class="elementor-field-type-honeypot elementor-field-group" style="display:none"><input type="text" name="form_fields[${f.custom_id}]"></div>`
+            : `<div class="elementor-field-type-${f.field_type} elementor-field-group elementor-column elementor-field-group-${f.custom_id} elementor-col-${f.width}${f.required ? ' elementor-field-required elementor-mark-required' : ''}">${label(f)}${control(f)}</div>`).join('\n');
+        return wrapWidget(el, 'form', `<form class="elementor-form" method="post" name="${s.form_name}">
+<div class="elementor-form-fields-wrapper elementor-labels-above">
+${groups}
+<div class="elementor-field-group elementor-column elementor-field-type-submit elementor-col-100 e-form__buttons">
+<button class="elementor-button elementor-size-${s.button_size}" type="submit"><span class="elementor-button-content-wrapper"><span class="elementor-button-text">${s.button_text}</span></span></button>
+</div>
+</div>
+</form>`);
+    },
+
     shortcode(el) {
         /* A shortcode renders to nothing without WordPress. Shown as a visible
            placeholder so a form slot is obvious in the comparison. */

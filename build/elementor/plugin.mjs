@@ -112,7 +112,8 @@ add_action('wp_enqueue_scripts', function () {
         [], null);
     wp_enqueue_style('wht', "$base/wht.css", [], $v('wht.css'));
     wp_enqueue_style('wht-elementor', "$base/wht-elementor.css", ['wht'], $v('wht-elementor.css'));
-    wp_enqueue_script('wht', "$base/wht.js", [], $v('wht.js'), true);
+    /* jquery: wht.js listens for Elementor Pro's jQuery submit_success event. */
+    wp_enqueue_script('wht', "$base/wht.js", ['jquery'], $v('wht.js'), true);
 }, 20);
 
 /* Every rule in wht.css is scoped to .wht-site. Without this class the

@@ -169,6 +169,27 @@
         });
     });
 
+    /* ---------- Elementor Pro enquiry form (WordPress) ----------
+       Tab 11: quote_start when a visitor first starts the form,
+       quote_submit + generate_lead when the submission succeeds.
+       Elementor announces success with a jQuery event, not a DOM one. */
+    function push(name) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: name });
+    }
+    site.querySelectorAll('.wht-form .elementor-form').forEach(function (f) {
+        f.addEventListener('focusin', function started() {
+            push('quote_start');
+            f.removeEventListener('focusin', started);
+        });
+    });
+    if (window.jQuery) {
+        window.jQuery(document).on('submit_success', '.wht-form .elementor-form', function () {
+            push('quote_submit');
+            push('generate_lead');
+        });
+    }
+
     /* ---------- Enquiry form (placeholder validation) ----------
        Replace with Elementor Form / WPForms / CF7 in WordPress.
        This only gives visitors feedback if the static form is left in place. */

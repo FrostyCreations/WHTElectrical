@@ -5,13 +5,12 @@
    words in it, so Wayne can edit copy in the editor. Only genuinely
    decorative markup goes into an HTML widget.
 
-   FREE WIDGETS ONLY. Elementor Pro cannot be installed in WordPress
-   Playground (it is licensed, not in the plugin repo), so anything
-   built with Pro widgets could not be tested before hand-over. The
-   two Pro pieces — Theme Builder header/footer and the contact form —
-   are set up in the editor instead, and formSlot() marks where.
+   FREE WIDGETS, with one exception: the enquiry form is Elementor
+   Pro's Form widget (WHT licensed Pro on 16 Oct 2026). Pro cannot be
+   installed in WordPress Playground, so the form is checked on the
+   live site. The header and footer stay in the wht-chrome plugin.
    ========================================================= */
-import { box, heading, text, button, html, image, accordion, dims } from './lib.mjs';
+import { box, heading, text, button, html, image, accordion, proForm, dims } from './lib.mjs';
 import { SITE, href } from '../layout.mjs';
 import { CARD, PROCESS_GENERAL, PHOTO, pages } from '../pages.mjs';
 
@@ -69,39 +68,58 @@ export function sectionHead({ eyebrow, h2, lead = [], center = false, id: anchor
 }
 
 /* ---------------------------------------------------------
-   Form slot. Elementor Pro's Form widget cannot be generated and
-   tested here, so this is where the developer drops it in the
-   editor. The heading above it is native so the copy stays editable.
+   Enquiry form — Elementor Pro's Form widget, Tab 8 fields.
+
+   Labels, options and the button are the Build Pack's words. The four
+   messages are NOT from the Build Pack (it has none); they were drafted
+   to promise nothing — no response time — and need WHT's sign-off.
+
+   Submissions are emailed to WHT; Reply-To is the visitor's email when
+   they give one. The Essential licence offers only email, email2 and
+   redirect as actions — no "Collect Submissions" — so the email is the
+   only record. A photo arrives as a link (Pro's default), not an
+   attachment, so a large phone photo cannot bounce the email.
    --------------------------------------------------------- */
-export function formSlot() {
-    return box({ cls: 'wht-form', label: 'Enquiry form', pad: dims(0) }, [
+export const SERVICES = ['Electrical', 'Fault Finding', 'Electrical COC', 'Gate Motor', 'Electric Fencing',
+    'Solar &amp; Backup Power', 'Plumbing', 'Property Maintenance', 'Other'];
+
+export const FORM_MESSAGES = {
+    success: 'Thank you. Your enquiry has been sent to WHT.',
+    error: `Your enquiry could not be sent. Please call WHT on ${SITE.phone1} or send a WhatsApp.`,
+    required: 'Please complete this field.',
+    invalid: 'Please check this entry.',
+};
+
+export function enquiryForm() {
+    const unamp = (s) => s.replace(/&amp;/g, '&');
+    return box({ cls: 'wht-form', label: 'Enquiry form' }, [
         heading('How Can WHT Help?', { tag: 'h2', cls: 'wht-form__title', label: 'Form heading' }),
-        html(`<!--
-  REPLACE THIS WIDGET WITH AN ELEMENTOR FORM.
-
-  Delete this HTML widget, drag in Elementor Pro's Form widget, and
-  rebuild the Tab 8 fields:
-
-    Name*            text, required
-    Mobile Number*   tel, required
-    Email            email
-    Area / Suburb*   text, required
-    Service needed*  select - Electrical, Solar & Backup Power, Plumbing,
-                     Property Maintenance, Not sure
-    What is happening?*  textarea, required
-    Photo            file upload, optional
-
-  Actions After Submit: Email (to ${SITE.email}) + Redirect or Message.
-  Under Additional Options, set the form name so the lead is identifiable.
-
-  Tracking: fire quote_submit and generate_lead on the form's success
-  event so the dataLayer events in wht.js stay consistent.
--->
-<p class="wht-note" style="padding:22px;border:2px dashed var(--wht-line);border-radius:var(--wht-radius)">
-  The enquiry form is added here in Elementor. Until then, please call
-  <a href="tel:${SITE.tel1}">${SITE.phone1}</a> or
-  <a href="${waHref("Hi WHT Electrical, I'd like help with the following:")}" target="_blank" rel="noopener">WhatsApp WHT</a>.
-</p>`, { label: 'Form placeholder — replace with Elementor Form' }),
+        text('<p class="wht-form__req"><span class="req">*</span> Required field</p>', { label: 'Required note' }),
+        proForm([
+            { id: 'name', type: 'text', label: 'Name', required: true, width: 50, extra: { autocomplete: 'name' } },
+            { id: 'mobile', type: 'tel', label: 'Mobile Number', required: true, width: 50 },
+            { id: 'email', type: 'email', label: 'Email', width: 50 },
+            { id: 'area', type: 'text', label: 'Area / Suburb', required: true, width: 50 },
+            { id: 'service', type: 'select', label: 'What Do You Need Help With?', required: true,
+                options: ['Select a service…|', ...SERVICES.map(unamp)] },
+            { id: 'message', type: 'textarea', label: 'Tell Us What’s Happening', required: true, extra: { rows: 4 } },
+            { id: 'photo', type: 'upload', label: 'Upload a Photo',
+                extra: { file_sizes: '10', file_types: 'jpg,jpeg,png,heic,heif,webp', allow_multiple_upload: '' } },
+            { id: 'website', type: 'honeypot' },
+        ], {
+            label: 'Enquiry form (Elementor Pro)',
+            name: 'WHT website enquiry',
+            button: 'Send My Enquiry',
+            actions: ['email'],
+            email: {
+                to: SITE.email,
+                subject: 'Website enquiry: [field id="service"] in [field id="area"]',
+                from: 'noreply@whtelectrical.co.za',
+                fromName: 'WHT Electrical website',
+                replyTo: 'email',
+            },
+            messages: FORM_MESSAGES,
+        }),
     ]);
 }
 

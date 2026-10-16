@@ -1,6 +1,6 @@
 /* Contact page as an Elementor template. Copy is the approved Tab 5 copy. */
 import { box, heading, text, dims } from './lib.mjs';
-import { pageHero, formSlot, contactDetails } from './sections.mjs';
+import { pageHero, enquiryForm, contactDetails } from './sections.mjs';
 
 export const title = 'WHT — Contact';
 
@@ -32,7 +32,7 @@ export const build = () => [
             ]),
 
             box({ label: 'Right column — form' }, [
-                formSlot(),
+                enquiryForm(),
             ]),
         ]),
     ]),

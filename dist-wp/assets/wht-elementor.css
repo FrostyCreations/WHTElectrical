@@ -490,3 +490,66 @@
               .wht-search__close, .wht-drawer__close):is(:hover, :focus) { background-color: transparent; }
 .wht-site .wht-totop:focus { background-color: var(--wht-navy); }
 .wht-site .wht-totop:hover { background-color: var(--wht-blue); }
+
+/* ---------------------------------------------------------
+   21. Enquiry form (Elementor Pro Form widget)
+   The static build styles its own <form> through .wht-field. Elementor
+   renders .elementor-field-group > label + .elementor-field instead, and
+   Hello's reset.css styles every input and button, so the same values
+   are restated here against Elementor's markup. The .wht-form card
+   (background, border, padding, shadow) still comes from wht.css.
+   --------------------------------------------------------- */
+.wht-site .wht-form .elementor-widget-text-editor p.wht-form__req { font-size: 13px; color: var(--wht-muted); margin: 0 0 22px; }
+.wht-site .wht-form .wht-form__req .req { color: var(--wht-danger); }
+
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-field-label {
+    display: block; font-family: var(--wht-font-body); font-weight: 600; font-size: 14px; line-height: 1.65;
+    margin: 0 0 6px; padding: 0; color: var(--wht-navy);
+}
+.wht-site .wht-form .elementor-form .elementor-mark-required .elementor-field-label::after { color: var(--wht-danger); }
+
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-field-textual,
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-select-wrapper select,
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-upload-field {
+    width: 100%; min-height: 0; padding: 12px 14px; border: 1px solid #C9D2DE; border-radius: var(--wht-radius);
+    font-family: var(--wht-font-body); font-size: 16px; line-height: 1.65; color: var(--wht-ink); background: #fff;
+    box-shadow: none;
+}
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-field-textual:focus,
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-select-wrapper select:focus,
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-upload-field:focus {
+    outline: none; border-color: var(--wht-blue); box-shadow: 0 0 0 3px rgba(45, 82, 163, .15);
+}
+.wht-site .wht-form .elementor-form textarea.elementor-field-textual { min-height: 130px; resize: vertical; }
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-upload-field { padding: 10px; background: var(--wht-bg-alt); }
+/* Elementor draws its own select arrow; keep it inside the padded box. */
+.wht-site .wht-form .elementor-form .elementor-select-wrapper::before { right: 14px; color: var(--wht-muted); }
+.wht-site .wht-form .elementor-form .elementor-select-wrapper select { padding-right: 38px; appearance: none; line-height: 1.4; }
+
+/* The submit button: .wht-btn--primary, full width — and immune to Hello. */
+.wht-site .wht-form .elementor-form .elementor-field-type-submit { margin-top: 4px; }
+.wht-site .wht-form .elementor-form button[type="submit"].elementor-button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+    min-height: 52px; padding: 15px 30px; border: 2px solid var(--wht-yellow); border-radius: var(--wht-radius);
+    background: var(--wht-yellow); color: #1a1a1a; font-family: var(--wht-font-body); font-weight: 700;
+    font-size: 15px; line-height: 1; cursor: pointer;
+    transition: color .2s ease, background-color .2s ease, transform .2s ease;
+}
+.wht-site .wht-form .elementor-form button[type="submit"].elementor-button:is(:hover, :focus-visible) {
+    background: var(--wht-navy); border-color: var(--wht-navy); color: #fff; transform: translateY(-2px);
+}
+.wht-site .wht-form .elementor-form button[type="submit"].elementor-button:focus:not(:focus-visible) {
+    background: var(--wht-yellow); color: #1a1a1a;
+}
+
+/* Validation and result messages, in the static .wht-form__status colours. */
+.wht-site .wht-form .elementor-form .elementor-message {
+    margin: 14px 0 0; padding: 12px 14px; border-radius: var(--wht-radius); font-size: 14px; font-weight: 600; line-height: 1.5;
+}
+.wht-site .wht-form .elementor-form .elementor-message::before { display: none; }
+.wht-site .wht-form .elementor-form .elementor-message-success { background: #E7F4EA; color: var(--wht-success); }
+.wht-site .wht-form .elementor-form .elementor-message-danger,
+.wht-site .wht-form .elementor-form .elementor-error .elementor-message { background: #FBE9E7; color: var(--wht-danger); }
+.wht-site .wht-form .elementor-form .elementor-error .elementor-field-textual {
+    border-color: var(--wht-danger); box-shadow: 0 0 0 3px rgba(198, 40, 40, .12);
+}

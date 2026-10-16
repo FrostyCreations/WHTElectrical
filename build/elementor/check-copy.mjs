@@ -19,11 +19,11 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 /* Known, deliberate differences. Keep this short and say why. */
 const ALLOW = {
-    /* The static page has a working form; the template has a marked slot
-       until a real form plugin is chosen (STATE.md, outstanding item 4). */
+    /* The static form marks the photo field with an "Optional" tag and has a
+       visible honeypot label; Elementor's labels are plain text and its
+       honeypot has no label. Required fields get Elementor's asterisk. */
     contact: {
-        missing: [/^(Required field|\*|Name|Mobile Number|Email|Area \/ Suburb|What Do You Need Help With\?|Select a service…|Electrical|Fault Finding|Electrical COC|Gate Motor|Electric Fencing|Solar & Backup Power|Plumbing|Property Maintenance|Other|Tell Us What's Happening|Upload a Photo|Optional|Website|Send My Enquiry)$/],
-        extra: [/^The enquiry form is added here in Elementor\. Until then, please call$/, /^WhatsApp WHT\.?$/, /^\.$/, /^or$/],
+        missing: [/^(Optional|Website)$/],
     },
 };
 
@@ -52,6 +52,13 @@ function templateRuns(content) {
             for (const k of ['title', 'editor', 'html', 'text', 'caption']) if (typeof s[k] === 'string') out.push(...runs(s[k]));
             for (const it of s.items || []) if (it.item_title) out.push(...runs(it.item_title));
             for (const it of s.icon_list || []) if (it.text) out.push(...runs(it.text));
+            /* Pro Form: labels, select options (the label half of 'Label|value')
+               and the button. The success/error messages are not page copy. */
+            for (const f of s.form_fields || []) {
+                if (f.field_label) out.push(...runs(f.field_label));
+                for (const o of (f.field_options || '').split('\n')) if (o) out.push(...runs(o.split('|')[0]));
+            }
+            if (s.button_text) out.push(...runs(s.button_text));
             walk(el.elements);
         }
     })(content);

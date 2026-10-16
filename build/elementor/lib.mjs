@@ -247,6 +247,50 @@ export function styleBlock(theme) {
     return box({ label: 'Template styles (keep)', cls: 'wpt-style', pad: dims(0) }, [html(code, { label: 'Fonts + CSS' })]);
 }
 
+/* Elementor Pro Form widget.
+   fields: [{ id, type, label, required, width, options[], placeholder, extra{} }]
+   A select option written 'Label|' has an empty value, so it works as a prompt
+   that a required field will not accept. */
+export function proForm(fields, o = {}) {
+    const s = {
+        form_name: o.name,
+        form_fields: fields.map((f) => ({
+            _id: id(),
+            custom_id: f.id,
+            field_type: f.type,
+            field_label: f.label ?? '',
+            placeholder: f.placeholder ?? '',
+            required: f.required ? 'true' : '',
+            width: String(f.width ?? 100),
+            ...(f.options ? { field_options: f.options.join('\n') } : {}),
+            ...(f.extra || {}),
+        })),
+        input_size: 'md',
+        show_labels: 'true',
+        mark_required: 'yes',     /* switchers: 'true' for required and show_labels, 'yes' for these — read from Pro 4.3.2 */
+        label_position: 'above',
+        column_gap: px(o.colGap ?? 16),
+        row_gap: px(o.rowGap ?? 18),
+        button_text: o.button,
+        button_size: 'md',
+        button_width: '100',
+        submit_actions: o.actions,
+        email_to: o.email.to,
+        email_subject: o.email.subject,
+        email_content: o.email.content ?? '[all-fields]',
+        email_from: o.email.from,
+        email_from_name: o.email.fromName,
+        email_reply_to: o.email.replyTo,
+        email_content_type: 'html',
+        custom_messages: 'yes',
+        success_message: o.messages.success,
+        error_message: o.messages.error,
+        required_field_message: o.messages.required,
+        invalid_message: o.messages.invalid,
+    };
+    return widget('form', common(o, s));
+}
+
 /* Form slot: empty Shortcode widget + styling hooks for WPForms, Contact Form 7 and Elementor Pro Form. */
 export function formSlot(o = {}) {
     return box({ label: 'Form slot — paste your form shortcode', cls: `wpt-form ${o.cls || ''}`.trim(), pad: dims(0) }, [
