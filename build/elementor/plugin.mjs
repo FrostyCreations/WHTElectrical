@@ -53,8 +53,8 @@ for (const [name, markup] of [['HEADER', skipAndSprite + '\n' + header], ['FOOTE
 }
 
 /* Pages the importer offers, parents before children. Slugs and parents
-   give the Tab 2 permalinks (ROUTES in layout.mjs). Contact imports as a
-   draft: its form is a placeholder that does not send (STATE.md). */
+   give the Tab 2 permalinks (ROUTES in layout.mjs).  makes a page
+   import as a draft; Contact had it until its form was tested (16 Oct 2026). */
 const PAGES = [
     { file: 'wht-home.json', title: 'Home', slug: 'home', front: true },
     { file: 'wht-electrical.json', title: 'Electrical', slug: 'electrical' },
@@ -65,7 +65,7 @@ const PAGES = [
     { file: 'wht-plumbing.json', title: 'Plumbing', slug: 'plumbing' },
     { file: 'wht-maintenance.json', title: 'Property Maintenance', slug: 'property-maintenance' },
     { file: 'wht-about.json', title: 'About', slug: 'about' },
-    { file: 'wht-contact.json', title: 'Contact', slug: 'contact', draft: true },
+    { file: 'wht-contact.json', title: 'Contact', slug: 'contact' },
     { file: 'wht-privacy.json', title: 'Privacy Policy', slug: 'privacy-policy' },
     { file: 'wht-terms.json', title: 'Terms', slug: 'terms' },
 ];
