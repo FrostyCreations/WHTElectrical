@@ -53,8 +53,9 @@ for (const [name, markup] of [['HEADER', skipAndSprite + '\n' + header], ['FOOTE
 }
 
 /* Pages the importer offers, parents before children. Slugs and parents
-   give the Tab 2 permalinks (ROUTES in layout.mjs).  makes a page
-   import as a draft; Contact had it until its form was tested (16 Oct 2026). */
+   give the Tab 2 permalinks (ROUTES in layout.mjs). Adding draft: true makes
+   a page import as a draft; Contact had it until its form was tested
+   (16 Oct 2026). */
 const PAGES = [
     { file: 'wht-home.json', title: 'Home', slug: 'home', front: true },
     { file: 'wht-electrical.json', title: 'Electrical', slug: 'electrical' },
