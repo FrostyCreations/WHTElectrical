@@ -20,8 +20,12 @@ Last updated: 16 October 2026 (Elementor Pro installed; Contact form built).
 - **Contact is a DRAFT with a real Elementor Pro form** (16 Oct). Verified on
   the draft preview: Tab 8 fields, labels and options; 50/50 rows on desktop,
   stacked on phones; styles match the static form; required fields enforced;
-  honeypot hidden. **Not yet tested by a real submission** and not published —
-  both waiting on the user (outstanding item 1). Preview it at
+  honeypot hidden. **Delivery tested 16 Oct:** one marked test enquiry, sent
+  with the recipient temporarily set to the user's Gmail on the live draft
+  only, arrived in the inbox (not spam); success message shown and
+  `quote_start` → `quote_submit` → `generate_lead` fired. The recipient was
+  then restored to info@whtelectrical.co.za by re-importing the template.
+  **Not published yet** (outstanding item 1). Preview at
   `/?page_id=65&preview=true` while logged in.
 - **Verified on the live site (logged in), 15–16 Oct:** every sampled text
   style on all ten inner pages matches the static build exactly (size, weight,
@@ -192,10 +196,13 @@ header/footer output or every page gets two of each.
 ## Outstanding, roughly in priority order
 
 1. **Finish the Contact form** (built: `enquiryForm()` in `sections.mjs`).
-   - **Test submission** — the user's call, since it emails WHT. Check it
-     arrives at info@whtelectrical.co.za, with the photo link, and isn't in spam.
+   - **Sending works** (tested to Gmail, landed in the inbox). Not yet tested:
+     delivery to the info@ mailbox itself, the Reply-To (the test left Email
+     blank) and the photo link (the browser pane cannot attach files).
      WordPress sends from `noreply@whtelectrical.co.za` via PHP mail; if mail
-     is unreliable, add an SMTP plugin.
+     ever goes missing, add an SMTP plugin.
+   - To test against a different inbox without committing an address: change
+     Email To on the live draft in the editor, test, then Re-import Contact.
    - **WHT to approve the drafted messages** (the Build Pack has none):
      success "Thank you. Your enquiry has been sent to WHT."; error "Your
      enquiry could not be sent. Please call WHT on 083 306 1267 or send a
