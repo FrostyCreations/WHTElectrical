@@ -521,7 +521,10 @@
     outline: none; border-color: var(--wht-blue); box-shadow: 0 0 0 3px rgba(45, 82, 163, .15);
 }
 .wht-site .wht-form .elementor-form textarea.elementor-field-textual { min-height: 130px; resize: vertical; }
-.wht-site .wht-form .elementor-form .elementor-field-group .elementor-upload-field { padding: 10px; background: var(--wht-bg-alt); }
+/* Elementor's per-page CSS whitens every field at
+   .elementor-N .elementor-element.elementor-element-ID .elementor-field-group .elementor-field:not(...);
+   this matches that specificity for the upload box. */
+.wht-site .wht-form .elementor-form .elementor-field-group .elementor-field.elementor-upload-field:not(.elementor-select-wrapper) { padding: 10px; background: var(--wht-bg-alt); }
 /* Elementor draws its own select arrow; keep it inside the padded box. */
 .wht-site .wht-form .elementor-form .elementor-select-wrapper::before { right: 14px; color: var(--wht-muted); }
 .wht-site .wht-form .elementor-form .elementor-select-wrapper select { padding-right: 38px; appearance: none; line-height: 1.4; }
