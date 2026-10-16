@@ -288,3 +288,205 @@
 /* The eyebrow on dark bands is yellow, and the hero brandline already
    has its own rule above at higher specificity. */
 .wht-site .wht-brand .elementor-widget-heading.wht-eyebrow .elementor-heading-title { color: var(--wht-yellow); }
+
+/* =========================================================
+   Inner pages
+   Added with the ten inner-page templates. Same principle as
+   above: every value is the one wht.css already uses, re-aimed
+   at the DOM Elementor renders.
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   12. Checklists
+   The static build writes <ul class="wht-bullets"> with an inline
+   check SVG per item. In Elementor the list is a plain <ul> in a
+   Text Editor, so Wayne edits it as a list, and the class sits on
+   the widget wrapper. The grid moves to the inner <ul> and the tick
+   is drawn with a mask of the same check icon from the sprite.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-text-editor.wht-bullets,
+.wht-site .elementor-widget-text-editor.wht-brand__points { display: block; margin: 0; }
+
+.wht-site .elementor-widget-text-editor.wht-bullets ul {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 28px;
+    list-style: none; margin: 0; padding: 0;
+}
+.wht-site .elementor-widget-text-editor.wht-bullets--1 ul { grid-template-columns: 1fr; }
+.wht-site .elementor-widget-text-editor.wht-brand__points ul {
+    display: grid; gap: 14px; margin: 26px 0 30px; list-style: none; padding: 0;
+}
+
+.wht-site .elementor-widget-text-editor.wht-bullets li,
+.wht-site .elementor-widget-text-editor.wht-brand__points li {
+    display: flex; gap: 12px; align-items: flex-start; font-weight: 500; margin: 0;
+}
+.wht-site .elementor-widget-text-editor.wht-bullets li { color: var(--wht-ink); }
+.wht-site .elementor-widget-text-editor.wht-bullets--dark li,
+.wht-site .elementor-widget-text-editor.wht-brand__points li { color: #EDF1F8; }
+
+.wht-site .elementor-widget-text-editor.wht-bullets li::before,
+.wht-site .elementor-widget-text-editor.wht-brand__points li::before {
+    content: ""; flex: none; width: 19px; height: 19px; margin-top: 4px;
+    background: var(--wht-success);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9.5 16.2 4.8 11.5l-1.4 1.4 6.1 6.1L21 7.5l-1.4-1.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9.5 16.2 4.8 11.5l-1.4 1.4 6.1 6.1L21 7.5l-1.4-1.4z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.wht-site .elementor-widget-text-editor.wht-bullets--dark li::before { background: var(--wht-yellow); }
+.wht-site .elementor-widget-text-editor.wht-brand__points li::before {
+    width: 20px; height: 20px; margin-top: 3px; background: var(--wht-yellow);
+}
+
+@media (max-width: 680px) {
+    .wht-site .elementor-widget-text-editor.wht-bullets ul { grid-template-columns: 1fr; }
+}
+
+/* ---------------------------------------------------------
+   13. Paragraph classes on the wrapper
+   wht.css gives .wht-lead and .wht-note their own margins. In
+   Elementor the class lands on the widget wrapper, which takes that
+   margin, while the <p> inside keeps the default 1.25rem below it —
+   so every lead came out 20px taller and every note box had 20px of
+   dead space at the bottom.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-text-editor:is(.wht-lead, .wht-note, .wht-markets-note) p:last-child { margin-bottom: 0; }
+
+/* ---------------------------------------------------------
+   14. Linked-card titles
+   The static card heading holds its icon inside the <h3>. Here the
+   icon sits beside the heading so the heading stays plain text in
+   the editor; these restate the icon size and colour.
+   --------------------------------------------------------- */
+.wht-site .wht-relcard__title.e-con { gap: 10px; }
+.wht-site .wht-relcard__title .elementor-widget-html { flex: none; }
+.wht-site .wht-relcard__title svg { display: block; width: 20px; height: 20px; color: var(--wht-blue); }
+.wht-site .wht-relcard__title--h2 svg { width: 22px; height: 22px; }
+.wht-site .wht-relcard__title .elementor-heading-title { margin: 0; }
+
+/* The service-list body grows; the icon tile keeps its 44px. */
+.wht-site .wht-sitem > .wht-sitem__body.e-con { --width: auto; flex: 1 1 0; min-width: 0; }
+.wht-site .wht-sitem > .elementor-widget-html { flex: none; }
+
+/* ---------------------------------------------------------
+   15. Sub-labels and eyebrows
+   Both are styled by class in wht.css. On a heading widget the class
+   is on the wrapper, and the inner heading's own element defaults and
+   the navy heading colour in section 11 override what it would
+   inherit, so the type is restated on the inner element.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-heading.wht-sublabel .elementor-heading-title {
+    font-family: var(--wht-font-head); font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; font-size: 13px; line-height: 1.15; color: var(--wht-blue); margin: 0;
+}
+/* Section 11 turned every eyebrow navy. They are blue in wht.css. */
+.wht-site .elementor-widget-heading.wht-eyebrow .elementor-heading-title { color: var(--wht-blue); line-height: 1.65; margin: 0; }
+
+/* ---------------------------------------------------------
+   16. Captioned photographs
+   A custom caption makes the Image widget wrap the picture in
+   <figure class="wp-caption">. The wrapper carries .wht-figure, so
+   the static rules reach the img and figcaption; this clears the
+   figure's own margin and restates the caption over Elementor's.
+   --------------------------------------------------------- */
+.wht-site .elementor-widget-image.wht-figure figure.wp-caption { margin: 0; max-width: none; }
+.wht-site .elementor-widget-image.wht-figure .widget-image-caption {
+    margin-top: 14px; font-size: 14.5px; color: var(--wht-muted); text-align: center;
+}
+
+/* ---------------------------------------------------------
+   17. Elementor's default container spacing
+   Found by measuring the live import against the static build:
+   every container wht.css does not style itself was getting
+   Elementor's default 20px widget gap and 10px padding. The static
+   build spaces those children with margins, so the defaults stacked
+   on top — the Electrical page came out 564px taller, its page hero
+   alone 132px.
+
+   This zeroes only the DEFAULTS. Elementor reads them through these
+   custom properties, so:
+     - a gap or padding set on an element in the editor still wins
+       (its generated CSS sets the same properties more specifically);
+     - a gap or padding in wht.css still wins (it sets the property
+       itself, not the variable).
+   --------------------------------------------------------- */
+.wht-site .e-con {
+    --gap: 0px; --row-gap: 0px; --column-gap: 0px;
+    --padding-top: 0px; --padding-right: 0px; --padding-bottom: 0px; --padding-left: 0px;
+}
+
+/* ---------------------------------------------------------
+   18. FAQ item spacing
+   Also found on the live import: Elementor's accordion CSS zeroes the
+   margin between items (every FAQ block came out 77px short) and sets
+   a tighter line height on the question. Restated at a specificity
+   that beats its :not(:last-child) rule.
+   --------------------------------------------------------- */
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item:not(:last-child) { margin-bottom: 12px; }
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title,
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title-text { line-height: 1.65; }
+
+/* Elementor caps every widget with
+       .elementor.elementor .e-con > .elementor-widget { max-width: 100% }
+   — the class is doubled on purpose to win — which beats the 760px
+   measure .wht-figure gives a captioned photo. Doubled here too. */
+.wht-site .e-con > .elementor-widget-image.wht-figure.wht-figure { max-width: 760px; width: 100%; margin-left: auto; margin-right: auto; }
+
+/* ---------------------------------------------------------
+   19. Elementor's global fonts and text colour
+   Found on the live site: the default Elementor kit sets Roboto
+   (weight 600) on every heading and text widget, and #7A7A7A on
+   every Text Editor, straight onto the widget. That outranks wht.css,
+   so the whole site — homepage included — rendered in Roboto.
+
+   Elementor reads all of these through the kit's --e-global-*
+   variables. Redeclaring them on WHT containers (custom properties
+   inherit, so this covers every widget inside) fixes it without
+   touching the kit, which Wayne may want for other pages:
+     - headings get the WHT heading face and weight;
+     - text, accent and the text colour are set to `initial`, which
+       makes Elementor's declarations invalid at computed-value time,
+       so the widget simply inherits what wht.css gives its context.
+   --------------------------------------------------------- */
+.wht-site .e-con {
+    --e-global-typography-primary-font-family: 'Exo 2';
+    --e-global-typography-primary-font-weight: 800;
+    --e-global-typography-secondary-font-family: 'Exo 2';
+    --e-global-typography-secondary-font-weight: 800;
+    --e-global-typography-text-font-family: initial;
+    --e-global-typography-text-font-weight: initial;
+    --e-global-typography-accent-font-family: initial;
+    --e-global-typography-accent-font-weight: initial;
+    --e-global-color-text: initial;
+}
+
+/* Text classes that sit on the widget wrapper lose to Elementor's own
+   wrapper rule, which now inherits; restated here. */
+.wht-site .elementor-widget-text-editor.wht-lead { color: var(--wht-muted); }
+.wht-site .elementor-widget-text-editor.wht-note,
+.wht-site .elementor-widget-text-editor.wht-markets-note { color: var(--wht-navy); font-weight: 500; }
+.wht-site .elementor-widget-text-editor.wht-step__lead { font-weight: 500; }
+
+/* Headings that are not the 800 default. */
+.wht-site .elementor-widget-heading.wht-eyebrow .elementor-heading-title { font-family: var(--wht-font-head); font-weight: 700; }
+.wht-site .wht-faqs .e-n-accordion .e-n-accordion-item-title-text { font-family: var(--wht-font-head); font-weight: 700; }
+.wht-site .elementor-widget-image.wht-figure .widget-image-caption { line-height: 1.65; }
+
+.wht-site .elementor-widget-text-editor.wht-pagehero__q { font-weight: 600; }
+
+/* In wht.css .wht-prose h2 (0,1,1) outranks .wht-title (0,1,0), so a
+   titled heading inside prose is 26px, not 38px. Section 5 sizes every
+   .wht-title heading at 1em of the wrapper; this restores the prose case. */
+.wht-site .wht-prose .elementor-widget-heading.wht-title .elementor-heading-title { font-size: clamp(20px, 2.4vw, 26px); }
+
+/* ---------------------------------------------------------
+   20. Hello Elementor's button reset
+   The theme's reset.css paints every button pink on hover and focus:
+       [type="button"]:hover, button:focus, ... { background-color: #c36 }
+   At (0,2,0) it outranks the WHT icon buttons, which only set their
+   background in the resting state, so "Services", search and the menu
+   button turned pink under the pointer and stayed pink after a click.
+   These restate the WHT backgrounds for both states.
+   --------------------------------------------------------- */
+.wht-site :is(.wht-nav__toggle, .wht-search-toggle, .wht-burger, .wht-search__submit,
+              .wht-search__close, .wht-drawer__close):is(:hover, :focus) { background-color: transparent; }
+.wht-site .wht-totop:focus { background-color: var(--wht-navy); }
+.wht-site .wht-totop:hover { background-color: var(--wht-blue); }
