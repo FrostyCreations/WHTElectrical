@@ -1,14 +1,14 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 16 October 2026.
+Last updated: 16 October 2026 (Elementor Pro installed; Contact form built).
 
 ---
 
 ## Live right now
 
-**https://whtelectrical.co.za** — WordPress, Hello Elementor theme, free
-Elementor 4.3.5. **No Elementor Pro** (see "Elementor Pro" below).
+**https://whtelectrical.co.za** — WordPress, Hello Elementor theme, Elementor
+4.3.5 + **Elementor Pro 4.3.2** (Essential licence, connected 16 Oct 2026).
 
 - **Behind a maintenance-mode plugin.** Logged-out visitors (and `curl`) get
   "WHT Electrical is under maintenance". Everything below is only visible when
@@ -17,8 +17,12 @@ Elementor 4.3.5. **No Elementor Pro** (see "Elementor Pro" below).
   (`ROUTES` in `build/layout.mjs`): Home, Electrical, Fault Finding & Repairs,
   Electrical COCs, Gate Motors & Electric Fencing, Solar & Backup Power,
   Plumbing, Property Maintenance, About, Privacy Policy, Terms.
-- **Contact is imported as a DRAFT.** Its form is a placeholder that does not
-  send. Do not publish it until a real form works (outstanding item 1).
+- **Contact is a DRAFT with a real Elementor Pro form** (16 Oct). Verified on
+  the draft preview: Tab 8 fields, labels and options; 50/50 rows on desktop,
+  stacked on phones; styles match the static form; required fields enforced;
+  honeypot hidden. **Not yet tested by a real submission** and not published —
+  both waiting on the user (outstanding item 1). Preview it at
+  `/?page_id=65&preview=true` while logged in.
 - **Verified on the live site (logged in), 15–16 Oct:** every sampled text
   style on all ten inner pages matches the static build exactly (size, weight,
   colour, family, line height); page heights within 1–3%; all icons resolve;
@@ -160,31 +164,48 @@ The user prefers work to be checked on the live site rather than in Playground.
    (3.5vw, 6vw ≤860px) in `wht.css`, so both builds match.
 16. Node's `fetch` fails here where curl works — Playground needs
    `NODE_OPTIONS=--network-family-autoselection-attempt-timeout=3000`.
-17. No Python on this machine. Multi-line shell edits with mixed quotes break
+17. **Pro Form switchers are inconsistent:** `required` and `show_labels` take
+   `'true'`; `mark_required`, `custom_messages` and most others take `'yes'`.
+   A wrong value silently leaves the setting off. Read
+   `elementor.widgetsCache.form.controls` in the editor to check.
+18. **This Essential licence offers only `email`, `email2`, `redirect` as form
+   actions** — no Collect Submissions, webhooks or Mailchimp. The email is the
+   only record of a lead.
+19. **Elementor writes per-page CSS for widget settings at high specificity**
+   (`.elementor-N .elementor-element.elementor-element-ID …`, about (0,6,0)).
+   It whitened the upload box; match it when a style refuses to apply.
+20. No Python on this machine. Multi-line shell edits with mixed quotes break
    in the Bash tool — use the Edit/Write tools.
 
 ---
 
 ## Elementor Pro
 
-Not needed for anything built so far. Theme Builder is replaced by the plugin;
-every page uses free widgets. The only Pro feature that would help is **Form
-Builder** for the Contact form, which the **Essential plan ($60/yr, 1 site)**
-covers. An existing licence "needs reissuing" — check it before buying.
-Contact Form 7 (free) is the no-cost alternative. If Theme Builder is ever used,
-disable the plugin's header/footer output or every page gets two of each.
+Installed and licensed (Essential, subscription A-S03424685, renews
+16 Oct 2027, 1 activation). Used for **one thing only: the Contact form**.
+Every other page uses free widgets, and the header/footer stay in the
+wht-chrome plugin. If Theme Builder is ever used, disable the plugin's
+header/footer output or every page gets two of each.
 
 ---
 
 ## Outstanding, roughly in priority order
 
-1. **Contact form.** Either Elementor Pro Form (Essential plan) or Contact Form 7.
-   Fields per Tab 8: Name*, Mobile Number*, Email, Area / Suburb*, What Do You
-   Need Help With?* (Electrical, Fault Finding, Electrical COC, Gate Motor,
-   Electric Fencing, Solar & Backup Power, Plumbing, Property Maintenance,
-   Other), Tell Us What's Happening*, Upload a Photo (optional). Email to
-   info@whtelectrical.co.za. Fire `quote_submit` + `generate_lead` on success.
-   `lib.mjs formSlot()` already styles CF7/WPForms output. Then publish Contact.
+1. **Finish the Contact form** (built: `enquiryForm()` in `sections.mjs`).
+   - **Test submission** — the user's call, since it emails WHT. Check it
+     arrives at info@whtelectrical.co.za, with the photo link, and isn't in spam.
+     WordPress sends from `noreply@whtelectrical.co.za` via PHP mail; if mail
+     is unreliable, add an SMTP plugin.
+   - **WHT to approve the drafted messages** (the Build Pack has none):
+     success "Thank you. Your enquiry has been sent to WHT."; error "Your
+     enquiry could not be sent. Please call WHT on 083 306 1267 or send a
+     WhatsApp."; required "Please complete this field."; invalid "Please check
+     this entry." They live in `FORM_MESSAGES`.
+   - **WHT to confirm the recipient** (Tab 12 lists "preferred email address"
+     as unconfirmed). Note WordPress's admin email is francois@bigondigital.co.za,
+     which is what Pro defaults to — the form deliberately uses info@.
+   - Then publish Contact (Re-import keeps it a draft; publish in WP admin, or
+     remove `draft: true` from `PAGES` in `plugin.mjs`).
 2. **Head-level SEO.** The move to WordPress lost it: no meta description, no
    og:title/og:image, no LocalBusiness or BreadcrumbList schema, and titles are
    just the page name. FAQPage schema survives (Nested Accordion emits it).
