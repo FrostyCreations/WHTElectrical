@@ -1,7 +1,7 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 16 October 2026 (Elementor Pro installed; Contact form built).
+Last updated: 16 October 2026 (Contact published with a working form; all 12 pages live).
 
 ---
 
@@ -13,20 +13,18 @@ Last updated: 16 October 2026 (Elementor Pro installed; Contact form built).
 - **Behind a maintenance-mode plugin.** Logged-out visitors (and `curl`) get
   "WHT Electrical is under maintenance". Everything below is only visible when
   logged in. Turning it off is the client's launch decision — do not touch it.
-- **11 pages published** as native Elementor pages at their Tab 2 permalinks
-  (`ROUTES` in `build/layout.mjs`): Home, Electrical, Fault Finding & Repairs,
-  Electrical COCs, Gate Motors & Electric Fencing, Solar & Backup Power,
-  Plumbing, Property Maintenance, About, Privacy Policy, Terms.
-- **Contact is a DRAFT with a real Elementor Pro form** (16 Oct). Verified on
-  the draft preview: Tab 8 fields, labels and options; 50/50 rows on desktop,
-  stacked on phones; styles match the static form; required fields enforced;
-  honeypot hidden. **Delivery tested 16 Oct:** one marked test enquiry, sent
-  with the recipient temporarily set to the user's Gmail on the live draft
-  only, arrived in the inbox (not spam); success message shown and
-  `quote_start` → `quote_submit` → `generate_lead` fired. The recipient was
-  then restored to info@whtelectrical.co.za by re-importing the template.
-  **Not published yet** (outstanding item 1). Preview at
-  `/?page_id=65&preview=true` while logged in.
+- **All 12 pages published** as native Elementor pages at their Tab 2
+  permalinks (`ROUTES` in `build/layout.mjs`): Home, Electrical, Fault Finding
+  & Repairs, Electrical COCs, Gate Motors & Electric Fencing, Solar & Backup
+  Power, Plumbing, Property Maintenance, About, Contact, Privacy Policy, Terms.
+- **Contact has a real Elementor Pro form**, published 16 Oct. Verified live:
+  Tab 8 fields, labels and options; 50/50 rows on desktop, stacked on phones;
+  styles match the static form; required fields enforced; honeypot hidden.
+  **Delivery tested 16 Oct:** one marked test enquiry, sent with the recipient
+  temporarily set to the user's Gmail on the live page only, arrived in the
+  inbox (not spam); success message shown and `quote_start` → `quote_submit`
+  → `generate_lead` fired. The recipient was then restored to
+  info@whtelectrical.co.za by re-importing the template.
 - **Verified on the live site (logged in), 15–16 Oct:** every sampled text
   style on all ten inner pages matches the static build exactly (size, weight,
   colour, family, line height); page heights within 1–3%; all icons resolve;
@@ -178,7 +176,12 @@ The user prefers work to be checked on the live site rather than in Playground.
 19. **Elementor writes per-page CSS for widget settings at high specificity**
    (`.elementor-N .elementor-element.elementor-element-ID …`, about (0,6,0)).
    It whitened the upload box; match it when a style refuses to apply.
-20. No Python on this machine. Multi-line shell edits with mixed quotes break
+20. **A plugin deploy leaves a few seconds with no plugin loaded** while SFTP
+   replaces `wht-chrome.php`: wp-admin's WHT Pages screen says "not allowed",
+   and pages render without the header, footer and CSS. It recovers on its
+   own. After launch, push plugin changes at quiet times, and don't push twice
+   in a row then act straight away.
+21. No Python on this machine. Multi-line shell edits with mixed quotes break
    in the Bash tool — use the Edit/Write tools.
 
 ---
@@ -195,7 +198,7 @@ header/footer output or every page gets two of each.
 
 ## Outstanding, roughly in priority order
 
-1. **Finish the Contact form** (built: `enquiryForm()` in `sections.mjs`).
+1. **Contact form sign-off** (built: `enquiryForm()` in `sections.mjs`).
    - **Sending works** (tested to Gmail, landed in the inbox). Not yet tested:
      delivery to the info@ mailbox itself, the Reply-To (the test left Email
      blank) and the photo link (the browser pane cannot attach files).
@@ -211,8 +214,7 @@ header/footer output or every page gets two of each.
    - **WHT to confirm the recipient** (Tab 12 lists "preferred email address"
      as unconfirmed). Note WordPress's admin email is francois@bigondigital.co.za,
      which is what Pro defaults to — the form deliberately uses info@.
-   - Then publish Contact (Re-import keeps it a draft; publish in WP admin, or
-     remove `draft: true` from `PAGES` in `plugin.mjs`).
+   - Contact is published (16 Oct); what remains is the WHT sign-off above.
 2. **Head-level SEO.** The move to WordPress lost it: no meta description, no
    og:title/og:image, no LocalBusiness or BreadcrumbList schema, and titles are
    just the page name. FAQPage schema survives (Nested Accordion emits it).
