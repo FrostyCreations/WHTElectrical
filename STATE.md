@@ -1,7 +1,106 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 16 October 2026 (Contact published with a working form; all 12 pages live).
+Last updated: 21 October 2026 (page-speed work built and tested on branch
+`claude/friendly-ptolemy-428nh3`, NOT merged or deployed yet — see the next section).
+
+---
+
+## NEXT: page-speed work waiting to be merged (21 Oct 2026)
+
+Done in a cloud session that could not reach the live site (its network
+blocked whtelectrical.co.za) and had no wp-admin login. Everything is on
+branch `claude/friendly-ptolemy-428nh3`. Nothing is live until it is
+merged to `main`, which triggers the deploy.
+
+**Starting point (PageSpeed, per the client brief):** mobile 67 / desktop 88
+performance, SEO 85. Mobile LCP 5.4 s (the hero video's JPEG poster), 6.6 MB
+video, jQuery + Google Fonts + 136 KB CSS render-blocking, Pro scripts on
+every page, no meta description, robots.txt timing out.
+
+**What changed**
+- Media (`build/optimise-media.sh`, needs ffmpeg): WebP + 480px WebP of every
+  photo; hero WebP 1280px (122 KB, was 254 KB JPEG; under 45 KB smeared the
+  solar panels) and 800px for phones (24 KB). Video re-encoded two-pass 720p,
+  no audio: `wht-hero.webm` 637 KB, `wht-hero.mp4` 907 KB (was 6.6 MB). The
+  original is the encoding master in `build/media-src/`.
+- Hero: the photo is now an `<img class="wht-hero__poster">` (LCP,
+  fetchpriority high, srcset, preloaded). The video sits on top with no
+  poster, transparent until it plays. `wht.js` loads it only at ≥1024px, not on
+  Save-Data or reduced motion, after load + 3 s or first scroll/mouse/click.
+  Shared markup: `heroMedia()` / `heroPreload()` in `layout.mjs`.
+- Fonts: Inter + Exo 2 self-hosted (`assets/fonts/`, variable Latin woff2,
+  OFL), preloaded, @font-face inline. The brief named Libre Franklin; the site
+  never used it — if PageSpeed showed it, it came from Elementor's kit fonts,
+  which the plugin now stops printing.
+- Deployed CSS minified by `build.mjs` (string-safe; verified identical to
+  source apart from whitespace).
+- **Plugin 1.1.0** — new code is hand-written in `build/elementor/plugin-perf.php`;
+  `plugin.mjs` appends it and fills in the data from layout/pages:
+  - meta description on all 12 pages from `pages.mjs` (approved Tab 5 copy,
+    not the brief's wording); skipped if an SEO plugin is active;
+  - hero preload + font preloads + @font-face at the top of `<head>`;
+  - `wht.css`, `wht-elementor.css`, Hello's reset and Elementor `widget-*`
+    CSS inlined **in place** (same cascade order); Hello theme/header-footer
+    CSS dropped on Canvas pages; Elementor CSS print method forced to Internal;
+  - jQuery moved to the footer, jQuery Migrate dropped;
+  - Elementor Pro's frontend scripts (incl. 285 KB elements-handlers) dropped
+    on pages with no Pro widget — i.e. everywhere but Contact. The brief's
+    "duplicate frontend.min.js 4.3.2 vs 4.3.5" is Pro's file vs core's, not a
+    duplicate;
+  - `the_content` filter: swaps the OLD live homepage hero (video + JPEG
+    poster) for the new markup, so **Home needs no re-import**, and points
+    media-library photo copies (`/wp-content/uploads/2026/10/plumbing-tanks-2.jpg`,
+    `-768x513` etc.) at `/assets/photos/*.webp` with srcset; lazy on Home.
+  - Every one of these has an off switch:
+    `add_filter('wht_perf_<name>', '__return_false');` — names in the file header.
+- Deploy workflow: backs up live css/js/plugin/.htaccess/robots as a 30-day
+  artifact; **stops if a live file was edited on the server since the last
+  deploy** (rebuilds the previous commit and compares —
+  `build/server/check-drift.mjs`; re-run manually with "Overwrite files changed
+  on the server" after checking); uploads fonts and `build/server/robots.txt`;
+  merges `build/server/htaccess-performance.txt` into the live `.htaccess`
+  between `# BEGIN/END WHT Performance` markers, never touching WordPress's
+  block, and restores the old file if the site answers 500.
+
+**How it was tested (cloud, no live access)**
+- 25-check PHP harness running the generated plugin against WordPress 7.1's
+  real `WP_HTML_Tag_Processor` with stubs: hero swap, WebP swap incl. `-2` and
+  `-768x512` names, head output per page, CSS inlining incl. traversal/foreign
+  host refusal, jQuery footer, Pro scripts kept on Contact. All pass.
+- `.htaccess` block served by a real Apache 2.4 with WordPress's rewrite rules:
+  1-year immutable cache on static files only, gzip, routing intact, no error
+  with mod_headers/expires/deflate disabled.
+- Lighthouse on the STATIC build served by that Apache (not WordPress, so
+  Elementor's own CSS/JS were absent): mobile 99 perf / 100 SEO, desktop 100.
+  LCP = hero img; no video in the payload; desktop video starts after ~3 s.
+- Drift check simulated against commit 5d92d2f: passes when untouched, stops
+  on a hand-edited file.
+
+**To do in the next (local) session, in this order**
+1. The user suspects some live files are not 100% what git has (tuning done
+   for Elementor). Before merging, with the logged-in browser: compare live
+   `/assets/wht.css`, `/assets/wht-elementor.css`, `/assets/wht.js` with
+   `git show 5d92d2f:assets/<file>`; check Elementor → Site Settings → Custom
+   CSS and Elementor → Custom Code for anything that should be in the repo.
+   (The deploy's drift check is the backstop, not the plan.)
+2. Merge the branch to `main`; watch the Actions run (backup artifact, drift
+   check, uploads, .htaccess diff, verify).
+3. wp-admin → Elementor → Tools → **Clear Files & Data** (element cache and
+   per-page CSS), and purge any host/page cache.
+4. Check live, logged in, 1440px and 375px: hero photo then video (desktop),
+   fonts, service-card photos are `/assets/photos/*.webp`, FAQ accordion opens,
+   **Contact form submits** (Pro scripts must still be there), nav dropdown
+   and drawer, no console errors (jQuery-in-footer is the one to watch).
+5. Run PageSpeed once maintenance mode is off (logged-out visitors and
+   PageSpeed see the maintenance page while it is on).
+6. If anything misbehaves, switch that one optimisation off with its
+   `wht_perf_*` filter rather than reverting everything.
+
+Not done, by choice: Elementor's `frontend.min.css` and its scripts stay as
+Elementor loads them (deferring them gains nothing measurable from the footer
+and risks inline-script breakage); no async-CSS "critical" split — the whole
+WHT CSS is small enough to inline, which avoids the layout-shift risk.
 
 ---
 
@@ -224,7 +323,8 @@ header/footer output or every page gets two of each.
 3. **Redirects for the 35 dead URLs.** Map written and verified against the old
    sitemap: `build/testserver/htaccess-production.txt`.
 4. **Launch (client's call):** turn off maintenance mode.
-5. **Hero video is 6.5 MB** — the homepage LCP. No ffmpeg on this machine.
+5. ~~Hero video is 6.5 MB~~ — re-encoded to 637 KB / 907 KB on the page-speed
+   branch (see NEXT at the top).
 6. **Homepage drift.** Roughly 300px shorter than the static build beyond the
    missing Recent Work section; not measured section by section since the
    spacing fixes. Cosmetic.

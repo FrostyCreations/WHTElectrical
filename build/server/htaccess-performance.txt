@@ -1,0 +1,51 @@
+# BEGIN WHT Performance
+# Managed by the GitHub deploy (build/server/htaccess-performance.txt).
+# The deploy replaces only what sits between these two marker lines and
+# leaves every other rule in this file, WordPress's included, as it was.
+# Everything is inside <IfModule>, so a module the server lacks is skipped
+# rather than taking the site down.
+
+<IfModule mod_mime.c>
+    AddType image/webp .webp
+    AddType image/avif .avif
+    AddType video/webm .webm
+    AddType video/mp4 .mp4
+    AddType font/woff2 .woff2
+    AddType image/svg+xml .svg
+</IfModule>
+
+# One year, immutable, for static files only; HTML is never cached here.
+# Safe because stylesheets and scripts carry ?ver= in their URLs (WordPress
+# and the WHT plugin add it), so a changed file gets a new URL. Photos,
+# fonts and the video do not: give a changed one a new filename, or
+# visitors who already have it keep the old copy.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/avif "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType video/mp4 "access plus 1 year"
+    ExpiresByType video/webm "access plus 1 year"
+</IfModule>
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|webp|avif|jpe?g|png|svg|ico|woff2|mp4|webm)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# Compression for text. woff2, images and video are already compressed;
+# deflating them again only costs server time.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript text/javascript
+    AddOutputFilterByType DEFLATE application/json application/xml image/svg+xml
+</IfModule>
+# END WHT Performance

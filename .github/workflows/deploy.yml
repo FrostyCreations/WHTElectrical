@@ -3,8 +3,23 @@ name: Deploy assets to xneelo
 # WHAT THIS DOES
 #
 # Syncs assets/ to public_html/assets/ on the live site. That is the
-# stylesheet, the script, the 10 photographs, the logo and the hero
-# video - everything the Elementor pages reference by absolute path.
+# stylesheet, the script, the photographs (JPEG and WebP), the fonts,
+# the logo and the hero video - everything the Elementor pages reference
+# by absolute path. Then the wht-chrome plugin, robots.txt, and the
+# caching block in .htaccess.
+#
+# SAFETY, IN ORDER
+#   1. Everything it is about to replace is downloaded first and kept
+#      for 30 days as the run's "live-backup" artifact.
+#   2. If a live stylesheet, script or plugin file differs from what git
+#      last deployed (someone edited it on the server), the run stops
+#      before uploading anything. Re-run it from the Actions tab with
+#      "Overwrite files changed on the server" ticked once you have
+#      looked. See build/server/check-drift.mjs.
+#   3. .htaccess is never replaced wholesale: only the block between
+#      "# BEGIN WHT Performance" and "# END WHT Performance" is written,
+#      WordPress's rules are checked to be byte-identical, and if the
+#      site answers 500 afterwards the old file goes straight back.
 #
 # WHAT IT DELIBERATELY DOES NOT DO
 #
@@ -14,9 +29,12 @@ name: Deploy assets to xneelo
 # a physical file beats a WordPress rewrite - and you would get half a
 # static site over half a WordPress one.
 #
-# It does not upload robots.txt or sitemap.xml either. A real file
-# overrides the virtual one WordPress/Yoast serves, so ours would
-# silently replace the SEO plugin's. Those stay with the plugin.
+# It does not upload sitemap.xml: WordPress serves /wp-sitemap.xml
+# itself. It DOES upload robots.txt (build/server/robots.txt), because
+# PageSpeed timed out fetching the virtual one WordPress generates; a
+# real file is served by Apache without starting PHP. The site has no
+# SEO plugin. If one is added later, check its robots settings against
+# this file, because the real file wins.
 #
 # TRANSPORT
 #
@@ -39,6 +57,11 @@ on:
       - 'build/**'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:
+    inputs:
+      overwrite_drift:
+        description: 'Overwrite files changed on the server (only after checking the live-backup artifact)'
+        type: boolean
+        default: false
 
 env:
   REMOTE_DIR: public_html/assets/
@@ -49,6 +72,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the drift check rebuilds the last deployed commit.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -129,26 +155,6 @@ jobs:
       # ignored with the leading "-", because sftp batch aborts on any
       # error and mkdir fails when the directory already exists.
       # ---------------------------------------------------------------
-      - name: Upload assets over SFTP
-        env:
-          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
-          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
-          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
-          REMOTE: ${{ env.REMOTE_DIR }}
-        run: |
-          R="${REMOTE%/}"
-          {
-            echo "-mkdir $R"
-            for d in img photos video; do echo "-mkdir $R/$d"; done
-            echo "put dist-wp/assets/*.css $R/"
-            echo "put dist-wp/assets/*.js  $R/"
-            for d in img photos video; do echo "put dist-wp/assets/$d/* $R/$d/"; done
-            echo "bye"
-          } > /tmp/upload.sftp
-          echo "--- batch ---"; cat /tmp/upload.sftp; echo "-------------"
-          sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
-            -oConnectTimeout=20 -P 22 -b /tmp/upload.sftp "$USER@$HOST"
-
       # ---------------------------------------------------------------
       # The site-chrome plugin. Elementor's Theme Builder needs Pro, which
       # the site does not have, so the header and footer ship as a plain
@@ -164,6 +170,88 @@ jobs:
             test -f dist-plugin/wht-chrome/wht-$f.json || { echo "::error::wht-$f.json missing from the plugin"; exit 1; }
           done
           grep -c '<symbol' dist-plugin/wht-chrome/wht-chrome.php | xargs -I{} echo "  sprite symbols in plugin: {}"
+
+      # ---------------------------------------------------------------
+      # Download what is live before touching it. Leading "-" lets a
+      # missing file (first deploy) pass instead of aborting the batch.
+      # ---------------------------------------------------------------
+      - name: Back up the live files
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+        run: |
+          B=live-backup
+          mkdir -p $B/assets $B/plugin
+          P=public_html/wp-content/plugins/wht-chrome
+          {
+            for f in wht.css wht-elementor.css wht.js; do echo "-get public_html/assets/$f $B/assets/$f"; done
+            echo "-get $P/wht-chrome.php $B/plugin/"
+            echo "-get $P/*.json $B/plugin/"
+            echo "-get public_html/.htaccess $B/htaccess"
+            echo "-get public_html/robots.txt $B/robots.txt"
+            echo "bye"
+          } > /tmp/backup.sftp
+          sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+            -oConnectTimeout=20 -P 22 -b /tmp/backup.sftp "$USER@$HOST"
+          find $B -type f -printf '  %P  %s bytes\n' | sort
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: live-backup-${{ github.run_id }}
+          path: live-backup/
+          include-hidden-files: true
+          retention-days: 30
+
+      # ---------------------------------------------------------------
+      # Stop if a live file was edited by hand since the last deploy.
+      # "Last deploy" is the commit main pointed at before this push;
+      # its files are rebuilt here in a separate worktree to compare.
+      # ---------------------------------------------------------------
+      - name: Check nothing was changed on the server by hand
+        if: ${{ !inputs.overwrite_drift }}
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          collect() { # build dir -> comparable layout
+            mkdir -p "$2/assets" "$2/plugin"
+            cp "$1"/dist-wp/assets/wht.css "$1"/dist-wp/assets/wht-elementor.css "$1"/dist-wp/assets/wht.js "$2/assets/"
+            cp "$1"/dist-plugin/wht-chrome/wht-chrome.php "$1"/dist-plugin/wht-chrome/*.json "$2/plugin/"
+          }
+          collect . /tmp/current
+          PREV="$BEFORE"
+          if [ -z "$PREV" ] || ! git cat-file -e "$PREV^{commit}" 2>/dev/null || [ "$PREV" = "0000000000000000000000000000000000000000" ]; then
+            PREV=$(git rev-parse HEAD)
+            echo "No previous commit for this run (manual run or new branch); comparing against this commit only."
+          fi
+          echo "Last deployed commit: $PREV"
+          git worktree add -q /tmp/prev "$PREV"
+          ( cd /tmp/prev && node build/build.mjs --wp --prod >/dev/null \
+              && node build/elementor/build.mjs >/dev/null && node build/elementor/plugin.mjs >/dev/null ) \
+            || { echo "::error::Could not rebuild $PREV to compare against. Check the live-backup artifact by hand, then re-run with 'Overwrite files changed on the server' ticked."; exit 1; }
+          collect /tmp/prev /tmp/previous
+          node build/server/check-drift.mjs live-backup /tmp/previous /tmp/current \
+            || { echo "::error::Live files were changed on the server since the last deploy. Nothing has been uploaded."; exit 1; }
+
+      - name: Upload assets over SFTP
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+          REMOTE: ${{ env.REMOTE_DIR }}
+        run: |
+          R="${REMOTE%/}"
+          {
+            echo "-mkdir $R"
+            for d in img photos video fonts; do echo "-mkdir $R/$d"; done
+            echo "put dist-wp/assets/*.css $R/"
+            echo "put dist-wp/assets/*.js  $R/"
+            for d in img photos video fonts; do echo "put dist-wp/assets/$d/* $R/$d/"; done
+            echo "bye"
+          } > /tmp/upload.sftp
+          echo "--- batch ---"; cat /tmp/upload.sftp; echo "-------------"
+          sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+            -oConnectTimeout=20 -P 22 -b /tmp/upload.sftp "$USER@$HOST"
 
       - name: Upload the plugin over SFTP
         env:
@@ -183,12 +271,73 @@ jobs:
           sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
             -oConnectTimeout=20 -P 22 -b /tmp/plugin.sftp "$USER@$HOST"
 
+      - name: Upload robots.txt
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+        run: |
+          printf 'put build/server/robots.txt public_html/robots.txt\nbye\n' > /tmp/robots.sftp
+          sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+            -oConnectTimeout=20 -P 22 -b /tmp/robots.sftp "$USER@$HOST"
+
+      # ---------------------------------------------------------------
+      # .htaccess: merge, upload, and put the old one back if the site
+      # breaks. A WordPress site with pretty permalinks always has an
+      # .htaccess, so if the download found none, something went wrong
+      # with the download: skip rather than upload a file without
+      # WordPress's rewrite rules.
+      # ---------------------------------------------------------------
+      - name: Add the caching block to .htaccess
+        env:
+          SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
+          HOST: ${{ secrets.XNEELO_FTP_SERVER }}
+          USER: ${{ secrets.XNEELO_FTP_USERNAME }}
+        run: |
+          if [ ! -s live-backup/htaccess ]; then
+            echo "::warning::Could not download public_html/.htaccess, so it was left alone. Add build/server/htaccess-performance.txt at the top of it by hand."
+            exit 0
+          fi
+          set +e
+          node build/server/merge-htaccess.mjs live-backup/htaccess /tmp/htaccess.new
+          rc=$?
+          set -e
+          [ $rc -eq 3 ] && exit 0
+          [ $rc -eq 0 ] || exit $rc
+          diff -u live-backup/htaccess /tmp/htaccess.new || true
+
+          sftp_put() {
+            printf 'put %s public_html/.htaccess\nbye\n' "$1" > /tmp/ht.sftp
+            sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
+              -oConnectTimeout=20 -P 22 -b /tmp/ht.sftp "$USER@$HOST"
+          }
+          sftp_put /tmp/htaccess.new
+          sleep 3
+
+          bad=0
+          for u in / /assets/wht.css /robots.txt; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://whtelectrical.co.za$u")
+            echo "  $u -> $code"
+            [ "$code" = "500" ] && bad=1
+          done
+          if [ $bad = 1 ]; then
+            echo "::error::The site answered 500 after the .htaccess change. Restoring the previous .htaccess."
+            sftp_put live-backup/htaccess
+            exit 1
+          fi
+          curl -sI --max-time 30 https://whtelectrical.co.za/assets/wht.css | grep -i '^cache-control' \
+            || echo "::warning::No Cache-Control header on wht.css yet. mod_headers may be off on this server; the site is unaffected."
+
       - name: Verify over HTTP
         run: |
           fail=0
-          for f in wht.css wht.js wht-elementor.css photos/hero-solar-roof.jpg img/wht-logo.svg video/wht-hero.mp4; do
+          for f in wht.css wht.js wht-elementor.css photos/hero-solar-roof.jpg photos/hero-solar-roof.webp \
+                   photos/hero-solar-roof-mobile.webp photos/plumbing-tanks.webp fonts/inter-latin-wght.woff2 \
+                   fonts/exo-2-latin-wght.woff2 img/wht-logo.svg video/wht-hero.mp4 video/wht-hero.webm; do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://whtelectrical.co.za/assets/$f")
             printf '  %-32s %s\n' "$f" "$code"
             [ "$code" = "200" ] || fail=1
           done
+          curl -s --max-time 30 https://whtelectrical.co.za/robots.txt | grep -q 'wp-sitemap.xml' \
+            && echo "  robots.txt                       ok" || { echo "  robots.txt                       not the deployed file"; fail=1; }
           [ "$fail" = "0" ] || { echo "::error::Some assets are not reachable over HTTPS."; exit 1; }

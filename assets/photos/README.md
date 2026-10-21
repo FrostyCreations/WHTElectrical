@@ -18,6 +18,13 @@ external tools:
 5. Contrast 1.10 and saturation 1.08 around luminance, then a mild 3x3 unsharp.
 6. JPEG at quality 72-78.
 
+Then `build/optimise-media.sh` (ffmpeg) writes the WebP copies the site
+actually serves: `<name>.webp` at full size and `<name>-480.webp` for phones,
+plus `hero-solar-roof.webp` (1280px) and `hero-solar-roof-mobile.webp` (800px).
+Re-run it after replacing any JPEG. The JPEGs stay: the Elementor importer
+copies them into the media library, and the WHT plugin points those copies
+back at the WebP files.
+
 The edits are deliberately gentle. Re-running the script on an already-processed
 file would stack the contrast and sharpening, so always start from the original.
 
