@@ -8,10 +8,10 @@
    missing icons, duplicate ids and heading problems. The build
    fails (exit 1) if anything is wrong.
    ========================================================= */
-import { writeFileSync, mkdirSync, copyFileSync, existsSync, readdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync, copyFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODE, SITE, ROUTES, ICON_NAMES, head, header, footer } from './layout.mjs';
+import { MODE, SITE, ROUTES, ICON_NAMES, head, header, footer, fontFaces } from './layout.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 MODE.wp = process.argv.includes('--wp');
@@ -28,6 +28,26 @@ const outDir = MODE.wp ? join(root, 'dist-wp') : root;
 
 /* Every internal link now resolves to a generated page, so nothing is skipped. */
 const EXTERNAL_PLACEHOLDERS = new Set();
+
+/* The deployed stylesheets are minified; the source in assets/ keeps its
+   comments. Deliberately conservative: comments go, strings (the data: URI
+   icons) are kept byte for byte, runs of whitespace collapse, and spaces are
+   dropped only around { } ; , and > — never around : + or -, where a space
+   changes a selector (".a :hover") or breaks calc(). */
+const minifyCss = (css) => {
+    const squeeze = (t) => t.replace(/\s+/g, ' ').replace(/\s*([{};,>])\s*/g, '$1').replace(/;}/g, '}');
+    /* Split into code and strings; a comment becomes a space in the code. */
+    const parts = [''];
+    let last = 0;
+    for (const m of css.matchAll(/\/\*[\s\S]*?\*\/|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/g)) {
+        parts[parts.length - 1] += css.slice(last, m.index);
+        if (m[0].startsWith('/*')) parts[parts.length - 1] += ' ';
+        else parts.push(m[0], '');
+        last = m.index + m[0].length;
+    }
+    parts[parts.length - 1] += css.slice(last);
+    return parts.map((p, i) => (i % 2 ? p : squeeze(p))).join('').trim() + '\n';
+};
 
 const outPath = (key) => MODE.wp
     ? join(outDir, ROUTES[key].wp, 'index.html')
@@ -59,10 +79,13 @@ if (MODE.wp) {
     /* wht-elementor.css only matters on the WordPress build, but it is
        harmless elsewhere and shipping it always keeps the two in step. */
     for (const f of ['wht.css', 'wht.js', 'wht-elementor.css']) {
-        if (existsSync(join(root, 'assets', f))) copyFileSync(join(root, 'assets', f), join(outDir, 'assets', f));
+        const from = join(root, 'assets', f);
+        if (!existsSync(from)) continue;
+        if (f.endsWith('.css')) writeFileSync(join(outDir, 'assets', f), minifyCss(readFileSync(from, 'utf8')));
+        else copyFileSync(from, join(outDir, 'assets', f));
     }
-    /* Photographs and the logo files travel with the build. */
-    for (const dir of ['photos', 'img', 'video']) {
+    /* Photographs, fonts and the logo files travel with the build. */
+    for (const dir of ['photos', 'img', 'video', 'fonts']) {
         const from = join(root, 'assets', dir);
         if (!existsSync(from)) continue;
         mkdirSync(join(outDir, 'assets', dir), { recursive: true });
@@ -190,9 +213,7 @@ if (MODE.wp) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${title404}</title>
 <meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>${fontFaces()}</style>
 <link rel="stylesheet" href="/assets/wht.css">
 <style>
   .wht-404 { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px 22px; background: var(--wht-navy); }

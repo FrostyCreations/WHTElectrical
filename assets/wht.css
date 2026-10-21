@@ -215,6 +215,12 @@
 .wht-hero__media { position: absolute; inset: 0; z-index: 0; }
 .wht-hero__media img,
 .wht-hero__video { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* The photo is the first paint; the video lies over it, invisible until it is
+   actually playing, so there is never a black or empty frame in between.
+   Keyed on the photo being there, so older markup that still relies on the
+   video's poster attribute keeps showing it. */
+.wht-hero__poster + .wht-hero__video { position: absolute; inset: 0; opacity: 0; transition: opacity .6s ease; }
+.wht-hero__poster + .wht-hero__video.is-playing { opacity: 1; }
 .wht-hero__media::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(22,35,59,.55) 0%, rgba(22,35,59,.22) 50%, rgba(22,35,59,.05) 100%); }
 .wht-hero__panel {
     position: absolute; inset: 0; z-index: 1;
