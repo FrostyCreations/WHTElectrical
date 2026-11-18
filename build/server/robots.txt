@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /wp-admin/
 Allow: /wp-admin/admin-ajax.php
 
-Sitemap: https://whtelectrical.co.za/wp-sitemap.xml
+Sitemap: https://whtelectrical.co.za/sitemap_index.xml

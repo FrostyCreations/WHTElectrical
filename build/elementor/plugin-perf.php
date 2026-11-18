@@ -74,6 +74,16 @@ add_action('wp_head', function () {
     }
 }, 1);
 
+/* With Yoast active it prints the description, so the block above stays
+   quiet; any page left without one in Yoast falls back to the approved
+   description, for search results and for link previews. */
+function wht_perf_yoast_desc($desc) {
+    if ($desc || !wht_perf_front() || !wht_perf('meta_description')) return $desc;
+    return wht_perf_data()['descriptions'][wht_perf_path()] ?? $desc;
+}
+add_filter('wpseo_metadesc', 'wht_perf_yoast_desc');
+add_filter('wpseo_opengraph_desc', 'wht_perf_yoast_desc');
+
 /* The fonts above replace the Google Fonts request, and Elementor's
    own kit fonts (Roboto) are never seen: the WHT bridge CSS
    redeclares the kit's font variables (wht-elementor.css §19). */

@@ -6,7 +6,7 @@ name: Deploy assets to xneelo
 # stylesheet, the script, the photographs (JPEG and WebP), the fonts,
 # the logo and the hero video - everything the Elementor pages reference
 # by absolute path. Then the wht-chrome plugin, robots.txt, and the
-# caching block in .htaccess.
+# security and caching blocks in .htaccess.
 #
 # SAFETY, IN ORDER
 #   1. Everything it is about to replace is downloaded first and kept
@@ -16,8 +16,9 @@ name: Deploy assets to xneelo
 #      before uploading anything. Re-run it from the Actions tab with
 #      "Overwrite files changed on the server" ticked once you have
 #      looked. See build/server/check-drift.mjs.
-#   3. .htaccess is never replaced wholesale: only the block between
-#      "# BEGIN WHT Performance" and "# END WHT Performance" is written,
+#   3. .htaccess is never replaced wholesale: only the blocks between
+#      "# BEGIN WHT Security"/"# END WHT Security" and
+#      "# BEGIN WHT Performance"/"# END WHT Performance" are written,
 #      WordPress's rules are checked to be byte-identical, and if the
 #      site answers 500 afterwards the old file goes straight back.
 #
@@ -29,12 +30,11 @@ name: Deploy assets to xneelo
 # a physical file beats a WordPress rewrite - and you would get half a
 # static site over half a WordPress one.
 #
-# It does not upload sitemap.xml: WordPress serves /wp-sitemap.xml
-# itself. It DOES upload robots.txt (build/server/robots.txt), because
-# PageSpeed timed out fetching the virtual one WordPress generates; a
-# real file is served by Apache without starting PHP. The site has no
-# SEO plugin. If one is added later, check its robots settings against
-# this file, because the real file wins.
+# It does not upload sitemap.xml: Yoast serves /sitemap_index.xml. It
+# DOES upload robots.txt (build/server/robots.txt), because PageSpeed
+# timed out fetching the virtual one WordPress generates; a real file is
+# served by Apache without starting PHP. The real file also wins over
+# Yoast's robots.txt editor, so make robots changes in the repo.
 #
 # TRANSPORT
 #
@@ -288,14 +288,14 @@ jobs:
       # with the download: skip rather than upload a file without
       # WordPress's rewrite rules.
       # ---------------------------------------------------------------
-      - name: Add the caching block to .htaccess
+      - name: Add the security and caching blocks to .htaccess
         env:
           SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
           HOST: ${{ secrets.XNEELO_FTP_SERVER }}
           USER: ${{ secrets.XNEELO_FTP_USERNAME }}
         run: |
           if [ ! -s live-backup/htaccess ]; then
-            echo "::warning::Could not download public_html/.htaccess, so it was left alone. Add build/server/htaccess-performance.txt at the top of it by hand."
+            echo "::warning::Could not download public_html/.htaccess, so it was left alone. Add build/server/htaccess-security.txt and htaccess-performance.txt at the top of it by hand."
             exit 0
           fi
           set +e
@@ -327,6 +327,12 @@ jobs:
           fi
           curl -sI --max-time 30 https://whtelectrical.co.za/assets/wht.css | grep -i '^cache-control' \
             || echo "::warning::No Cache-Control header on wht.css yet. mod_headers may be off on this server; the site is unaffected."
+          for h in strict-transport-security x-content-type-options x-frame-options referrer-policy content-security-policy; do
+            curl -sI --max-time 30 https://whtelectrical.co.za/ | grep -qi "^$h:" && echo "  $h: set" \
+              || echo "::warning::$h is not being sent. mod_headers may be off on this server."
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 https://whtelectrical.co.za/xmlrpc.php)
+          echo "  xmlrpc.php -> $code (403 expected)"
 
       - name: Verify over HTTP
         run: |
@@ -338,6 +344,6 @@ jobs:
             printf '  %-32s %s\n' "$f" "$code"
             [ "$code" = "200" ] || fail=1
           done
-          curl -s --max-time 30 https://whtelectrical.co.za/robots.txt | grep -q 'wp-sitemap.xml' \
+          curl -s --max-time 30 https://whtelectrical.co.za/robots.txt | grep -q 'sitemap_index.xml' \
             && echo "  robots.txt                       ok" || { echo "  robots.txt                       not the deployed file"; fail=1; }
           [ "$fail" = "0" ] || { echo "::error::Some assets are not reachable over HTTPS."; exit 1; }

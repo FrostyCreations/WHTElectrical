@@ -1,0 +1,55 @@
+# BEGIN WHT Security
+# Managed by the GitHub deploy (build/server/htaccess-security.txt).
+# Generic: nothing in here is specific to WHT, so the same block can go at
+# the top of any WordPress site's .htaccess on Apache 2.4.
+
+# --- Security headers -------------------------------------------------
+# "always" so they also go out on redirects and error pages.
+<IfModule mod_headers.c>
+    # HTTPS only, for a year. No includeSubDomains: a subdomain without a
+    # valid certificate (webmail, an old test site) would become unreachable.
+    Header always set Strict-Transport-Security "max-age=31536000"
+    Header always set X-Content-Type-Options "nosniff"
+    # Only this site may put its pages in a frame (Elementor's editor does).
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+    # The parts of a Content-Security-Policy that cannot break WordPress,
+    # Elementor or wp-admin: no framing by other sites, no <base> hijack,
+    # no plugins (Flash/Java), and http:// links upgraded to https://.
+    # Locking down where scripts and styles may load from is deliberately
+    # NOT done here; see STATE.md ("Security") before adding it.
+    Header always set Content-Security-Policy "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+    # Do not announce the PHP version.
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
+# --- No directory listings ---------------------------------------------
+Options -Indexes
+
+# --- Files nobody outside needs ------------------------------------------
+<IfModule mod_authz_core.c>
+    # XML-RPC: a favourite brute-force target. Nothing on this site uses it
+    # (no Jetpack, no WordPress mobile app). Delete this block to re-enable.
+    <Files "xmlrpc.php">
+        Require all denied
+    </Files>
+    # Version-revealing readme/licence/changelog files (WordPress's own and
+    # every plugin's), configuration, logs, backups and dotfiles.
+    <FilesMatch "(?i)^(readme|license|licence|changelog)\.(txt|html?|md)$">
+        Require all denied
+    </FilesMatch>
+    <FilesMatch "(?i)(^wp-config\.php|\.(sql|log|bak|old|orig|swp|dist|ini|env)$|^\.)">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# --- No PHP from the uploads folder ---------------------------------------
+# Uploads (including files sent through the contact form) are never meant
+# to run as code.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^wp-content/uploads/.*\.(php\d?|phtml|phar)$ - [F,L,NC]
+</IfModule>
+# END WHT Security

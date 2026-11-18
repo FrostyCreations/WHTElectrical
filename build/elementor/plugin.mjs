@@ -43,9 +43,13 @@ const between = (s, start, end, label) => {
     return s.slice(a + start.length, b);
 };
 
-const skipAndSprite = between(body, '<div class="wht-site">', '<header', 'icon sprite').trim();
-const header = '<header' + between(body, '<header', '</header>', 'header') + '</header>';
-const footer = between(body, '</main>', '\n</div>', 'footer block').trim();
+/* Developer notes in HTML comments ("social icons removed…", "Tab 8")
+   help in the static build but should not be readable in the live
+   page source, so the chrome ships without them. */
+const noComments = (s) => s.replace(/<!--(?!\[if)[\s\S]*?-->[ \t]*\n?/g, '');
+const skipAndSprite = noComments(between(body, '<div class="wht-site">', '<header', 'icon sprite')).trim();
+const header = noComments('<header' + between(body, '<header', '</header>', 'header') + '</header>');
+const footer = noComments(between(body, '</main>', '\n</div>', 'footer block')).trim();
 
 /* Nowdoc, so nothing in the markup is interpolated or needs escaping.
    Guard against the terminator appearing in the markup itself. */
@@ -86,7 +90,7 @@ const php = `<?php
 /**
  * Plugin Name: WHT Electrical — site chrome
  * Description: Header, footer, drawer, search overlay and mobile bar for the WHT site, plus the stylesheets and script. Does the job Elementor Theme Builder would, without needing Elementor Pro.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      Big On Digital
  *
  * GENERATED FILE — do not edit.
@@ -342,6 +346,8 @@ const perfData = {
 };
 const perfJson = JSON.stringify(perfData, null, 1);
 if (/^WHT_PERF_JSON/m.test(perfJson)) throw new Error('perf data contains the WHT_PERF_JSON nowdoc terminator');
+const security = readFileSync(join(root, 'build', 'elementor', 'plugin-security.php'), 'utf8')
+    .replace(/^<\?php\s*/, '');
 const perf = readFileSync(join(root, 'build', 'elementor', 'plugin-perf.php'), 'utf8')
     .replace(/^<\?php\s*/, '')
     .replace('__WHT_PERF_DATA__', () => perfJson);
@@ -351,7 +357,7 @@ if (Object.keys(perfData.descriptions).length !== Object.keys(ROUTES).length) {
 
 const outDir = join(root, 'dist-plugin', 'wht-chrome');
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, 'wht-chrome.php'), php + '\n' + perf);
+writeFileSync(join(outDir, 'wht-chrome.php'), php + '\n' + perf + '\n' + security);
 /* The templates travel inside the plugin, so the import needs no file upload. */
 for (const p of PAGES) {
     writeFileSync(join(outDir, p.file), readFileSync(join(root, 'dist-elementor', p.file), 'utf8'));

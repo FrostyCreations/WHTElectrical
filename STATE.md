@@ -1,8 +1,8 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 21 October 2026 (page-speed work built and tested on branch
-`claude/friendly-ptolemy-428nh3`, NOT merged or deployed yet — see the next section).
+Last updated: 18 November 2026 (page-speed and security work built and tested on
+branch `claude/friendly-ptolemy-428nh3`, NOT merged or deployed yet — see the next section).
 
 ---
 
@@ -96,6 +96,56 @@ every page, no meta description, robots.txt timing out.
    PageSpeed see the maintenance page while it is on).
 6. If anything misbehaves, switch that one optimisation off with its
    `wht_perf_*` filter rather than reverting everything.
+
+### Security hardening (18 Nov 2026, same branch, also not deployed)
+
+From an outside review of the live page source. Server half:
+`build/server/htaccess-security.txt` (its own `# BEGIN/END WHT Security`
+block, merged by the deploy like the performance one; nothing WHT-specific,
+so the same block can go on another WordPress site on Apache). WordPress half:
+`build/elementor/plugin-security.php` (plugin 1.2.0), switches `wht_sec_*`.
+
+| Finding | Fix |
+| --- | --- |
+| No security headers | HSTS (1 year, no includeSubDomains so webmail etc. are not forced), nosniff, X-Frame-Options SAMEORIGIN, Referrer-Policy, Permissions-Policy, and a CSP limited to `frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests` |
+| Versions advertised | generator metas (WP, Elementor) and Yoast's version comment stripped from `<head>`; every `?ver=` replaced by a salted 8-char hash (cache busting still works); `X-Powered-By` removed; readme/licence/changelog files return 403 |
+| `xmlrpc.php` | 403 in .htaccess before PHP runs; also disabled in WordPress; RSD link and X-Pingback header gone |
+| REST API / usernames | `/wp/v2/users` hidden from logged-out visitors; REST link removed from `<head>` and headers; `?author=N` and author archives 301 to home for visitors; oEmbed author fields removed; login errors no longer confirm a username |
+| Developer comments | stripped from the plugin's header/footer at build time and from page content (Contact's "BUSINESS HOURS … Tab 12" note) by a `the_content` filter; comments inside `<script>`/`<style>` untouched |
+| WhatsApp new tab without `rel="noopener"` | the static links already had it; Elementor's button did not. Every `target="_blank"` link in page content now gets `noopener` added to its existing `rel` |
+| Also added | Plugin/theme file editor off (`DISALLOW_FILE_EDIT`); no directory listings; wp-config, `.env`, logs, backups, `.ini` and dotfiles 403; PHP in `wp-content/uploads` (incl. form uploads) refused |
+
+Yoast is now on the live site (the review saw 28.7), so: robots.txt points at
+`/sitemap_index.xml`; the plugin's meta description steps aside for Yoast but
+fills in any page Yoast has no description for (`wpseo_metadesc`).
+
+Tested here: 23 more PHP harness checks (48 total, all pass); the security
+block on Apache 2.4 + mod_php with real WordPress rewrite rules (pages, login,
+assets, uploads, `.well-known` still 200; xmlrpc, readme, wp-config, dotfiles,
+logs, uploads PHP, directory listing all 403; headers present on PHP pages and
+on 403s; PHP's own X-Powered-By removed). On a host that forbids these
+.htaccess directives Apache answers 500 — the deploy then restores the old
+.htaccess automatically.
+
+**Deliberately not done**
+- A CSP that restricts where scripts/styles load from. WordPress, Elementor's
+  editor (needs `unsafe-eval`), Yoast and the planned GTM/GA4 all load or
+  inject scripts; a strict policy would break wp-admin or analytics silently.
+  Do it after GTM is installed, as Report-Only first.
+- Elementor still has its version inside its inline JS config (it needs it to
+  load its own chunks). Hiding versions is a speed bump; updates are the fix.
+
+**Needs wp-admin (cannot be done from the repo)**
+1. Yoast → Settings → Advanced → Author archives: off (also drops the author
+   sitemap, which lists user slugs).
+2. Two-factor login and login-attempt limiting for every admin (e.g. Wordfence
+   Login Security or WP 2FA + Limit Login Attempts Reloaded).
+3. Confirm no admin account is called "admin" and every admin is needed
+   (francois@bigondigital.co.za is the site admin email).
+4. Auto-updates on for plugins; delete inactive plugins/themes; remove the
+   maintenance-mode plugin once launched.
+5. After deploying, check https://securityheaders.com and that the Contact
+   form, Elementor editor and Yoast still work while logged in.
 
 Not done, by choice: Elementor's `frontend.min.css` and its scripts stay as
 Elementor loads them (deferring them gains nothing measurable from the footer
