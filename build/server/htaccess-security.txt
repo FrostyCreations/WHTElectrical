@@ -40,7 +40,9 @@ Options -Indexes
     <FilesMatch "(?i)^(readme|license|licence|changelog)\.(txt|html?|md)$">
         Require all denied
     </FilesMatch>
-    <FilesMatch "(?i)(^wp-config\.php|\.(sql|log|bak|old|orig|swp|dist|ini|env)$|^\.)">
+    # Dotfiles too, except .well-known (Let's Encrypt, llms/ARD discovery):
+    # when that folder is missing Apache tests its name, not the file's.
+    <FilesMatch "(?i)(^wp-config\.php|\.(sql|log|bak|old|orig|swp|dist|ini|env)$|^\.(?!well-known$))">
         Require all denied
     </FilesMatch>
 </IfModule>
