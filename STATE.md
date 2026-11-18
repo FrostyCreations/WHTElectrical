@@ -95,10 +95,29 @@ In order (repo work first, then wp-admin, then off-site):
   handled by the server, so not repeated.
 - Layout checked in the browser after deploy 1; no console errors.
 
-**Found for wp-admin:** Yoast's sitemap lists the WordPress "Hello World"
-post (/2026/10/14/hello-world/), "Sample Page", category and author
-sitemaps. Trash Hello World + Sample Page; turn off category/author
-archives in Yoast. Then items 4 onward.
+**wp-admin, same day (logged in):**
+- Installed already: Wordfence, UpdraftPlus, WP-Optimize, Yoast 28.7,
+  Burst Statistics, Creame WhatsApp, Internal Links, Maintenance (active
+  but not blocking visitors).
+- Yoast: author and date archives disabled (redirect home); categories,
+  tags and Elementor Floating Elements hidden from search. The sitemap index
+  is now post + page only. Posts left indexable for future Recent Work.
+- **Page cache ON** (WP-Optimize, 24 h lifespan, minify/merge NOT enabled,
+  so the stylesheet order is unchanged). First byte 2.1 s -> 0.2 s. Cached
+  copies checked: titles, schema, Contact form, Elementor CSS before wht.css.
+  **After a plugin/CSS deploy, purge it** (WP-Optimize -> Cache -> Purge,
+  or the admin-bar menu), or visitors see the old HTML for up to 24 h.
+- **UpdraftPlus:** Google Drive authenticated, but nothing had been
+  scheduled since the 22 Oct backup. Re-saved: database weekly, files
+  monthly, keep 2. Next run 19 Nov 00:09. Cached pages don't run WP-cron,
+  so ask Xneelo (konsoleH cron) to call /wp-cron.php hourly if runs slip.
+- **Left for the user (security settings):** Wordfence 2FA is OFF (enable
+  it under Login Security and scan the QR code on a phone); brute force is
+  at defaults (20 failures, 4 h lockout): suggest 5 failures and "lock out
+  invalid usernames"; WordPress/plugin auto-updates; SMTP (needs the
+  mailbox password).
+- Still in the sitemap: the WordPress "Hello World" post
+  (/2026/10/14/hello-world/) and "Sample Page". Trash both (awaiting OK).
 
 ## 18 Nov 2026: security and Agentic Browsing, LIVE
 
