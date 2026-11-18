@@ -271,13 +271,22 @@ jobs:
           sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
             -oConnectTimeout=20 -P 22 -b /tmp/plugin.sftp "$USER@$HOST"
 
-      - name: Upload robots.txt
+      - name: Upload robots.txt, llms.txt and the ARD manifest
         env:
           SSHPASS: ${{ secrets.XNEELO_FTP_PASSWORD }}
           HOST: ${{ secrets.XNEELO_FTP_SERVER }}
           USER: ${{ secrets.XNEELO_FTP_USERNAME }}
         run: |
-          printf 'put build/server/robots.txt public_html/robots.txt\nbye\n' > /tmp/robots.sftp
+          # llms.txt and .well-known/ard.json come from build/agent-files.mjs.
+          # Real files, because WordPress answers missing URLs too slowly for
+          # Lighthouse's Agentic Browsing audits (they timed out at ~3 s).
+          {
+            echo "put build/server/robots.txt public_html/robots.txt"
+            echo "put dist-wp/llms.txt public_html/llms.txt"
+            echo "-mkdir public_html/.well-known"
+            echo "put dist-wp/.well-known/ard.json public_html/.well-known/ard.json"
+            echo "bye"
+          } > /tmp/robots.sftp
           sshpass -e sftp -oBatchMode=no -oStrictHostKeyChecking=accept-new \
             -oConnectTimeout=20 -P 22 -b /tmp/robots.sftp "$USER@$HOST"
 
@@ -346,4 +355,9 @@ jobs:
           done
           curl -s --max-time 30 https://whtelectrical.co.za/robots.txt | grep -q 'sitemap_index.xml' \
             && echo "  robots.txt                       ok" || { echo "  robots.txt                       not the deployed file"; fail=1; }
+          for f in llms.txt .well-known/ard.json; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "https://whtelectrical.co.za/$f")
+            printf '  %-32s %s\n' "$f" "$code"
+            [ "$code" = "200" ] || fail=1
+          done
           [ "$fail" = "0" ] || { echo "::error::Some assets are not reachable over HTTPS."; exit 1; }

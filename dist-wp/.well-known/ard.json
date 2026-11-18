@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "identifier": "urn:air:whtelectrical.co.za:website:site-guide",
+      "displayName": "WHT Electrical site guide",
+      "description": "Electrical, solar, plumbing and property maintenance services across Gauteng and nationally. Tell WHT what’s happening and request a quote.",
+      "type": "text/markdown",
+      "url": "https://whtelectrical.co.za/llms.txt",
+      "representativeQueries": [
+        "electrician in Benoni",
+        "electrical COC Gauteng",
+        "solar and battery backup installer Gauteng",
+        "plumbing and geyser repairs Benoni",
+        "gate motor and electric fence repairs Gauteng"
+      ]
+    }
+  ]
+}
