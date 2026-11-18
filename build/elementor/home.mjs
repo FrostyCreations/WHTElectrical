@@ -9,7 +9,7 @@
    ========================================================= */
 import { box, heading, text, button, html, image, accordion, dims } from './lib.mjs';
 import { sectionHead, waHref } from './sections.mjs';
-import { SITE, href } from '../layout.mjs';
+import { SITE, href, heroMedia } from '../layout.mjs';
 
 export const title = 'WHT — Home';
 
@@ -80,9 +80,7 @@ export const build = () => [
        the SVG stroke and the video stay byte-identical to the static build. */
     box({ cls: 'wht-hero', anchor: 'home', tag: 'section', label: 'Hero' }, [
         html(`<div class="wht-hero__media">
-    <video class="wht-hero__video" data-src="/assets/video/wht-hero.mp4"
-        poster="/assets/photos/hero-solar-roof.jpg"
-        autoplay muted loop playsinline preload="none" aria-hidden="true"></video>
+    ${heroMedia()}
 </div>
 <div class="wht-hero__panel" aria-hidden="true"></div>
 <svg class="wht-hero__edge" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">

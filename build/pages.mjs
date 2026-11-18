@@ -5,7 +5,7 @@
    High-Intent Service and Standard Content templates).
    ========================================================= */
 import {
-    SITE, href, ic, btn, arrow, asset, pageHero, sectionHead, bullets, slist, steps,
+    SITE, href, ic, btn, arrow, asset, heroMedia, pageHero, sectionHead, bullets, slist, steps,
     related, callout, faqSection, ctaBand,
 } from './layout.mjs';
 
@@ -28,10 +28,13 @@ export const PHOTO = {
     dbboard:     ['electrical-db-board.jpg',       800, 534, 'An open distribution board showing circuit breakers and an earth leakage unit'],
 };
 
-/* <img> for a photo. Pass alt: '' to override the table when the image is decorative. */
+/* <img> for a photo. Pass alt: '' to override the table when the image is decorative.
+   Served as WebP (build/optimise-media.sh) with a 480px copy for phones; the
+   JPEG stays on disk for the Elementor importer and anything linking to it. */
 const photo = (key, { lazy = true, alt, extra = '' } = {}) => {
     const [file, w, h, defaultAlt] = PHOTO[key];
-    return `<img src="${asset('photos/' + file)}" alt="${alt === undefined ? defaultAlt : alt}" width="${w}" height="${h}"${lazy ? ' loading="lazy"' : ''} decoding="async"${extra}>`;
+    const base = asset('photos/' + file.replace(/\.jpg$/, ''));
+    return `<img src="${base}.webp" srcset="${base}-480.webp 480w, ${base}.webp ${w}w" sizes="(max-width: 600px) 100vw, ${w}px" alt="${alt === undefined ? defaultAlt : alt}" width="${w}" height="${h}"${lazy ? ' loading="lazy"' : ''} decoding="async"${extra}>`;
 };
 
 /* ---------- Reusable approved copy ---------- */
@@ -123,7 +126,6 @@ export const pages = [
         label: 'Home',
         title: 'WHT Electrical | Electrical, Solar, Plumbing & Maintenance Gauteng',
         description: 'Electrical, solar, plumbing and property maintenance services across Gauteng and nationally. Tell WHT what’s happening and request a quote.',
-        preload: 'photos/hero-solar-roof.jpg',
         faqs: [
             ['What services does WHT Electrical provide?', 'WHT provides general electrical work, fault finding, COCs, gate motors, electric fencing, generator connections, solar and battery backup, plumbing and property maintenance.'],
             ['Where is WHT Electrical based?', 'WHT Electrical is based in Northmead, Benoni, Gauteng.'],
@@ -135,11 +137,9 @@ export const pages = [
         <!-- SECTION 2 — HERO -->
         <section id="home" class="wht-hero" aria-labelledby="wht-h1">
             <div class="wht-hero__media">
-                <!-- The poster is what loads first and what mobile keeps. wht.js attaches
-                     the video source only on wide screens, and never under reduced motion. -->
-                <video class="wht-hero__video" data-src="${asset('video/wht-hero.mp4')}"
-                    poster="${asset('photos/hero-solar-roof.jpg')}"
-                    autoplay muted loop playsinline preload="none" aria-hidden="true"></video>
+                <!-- The photo is the first paint and what phones keep. wht.js attaches
+                     the video source only on desktop, after the page has loaded. -->
+                ${heroMedia()}
             </div>
             <div class="wht-hero__panel" aria-hidden="true"></div>
             <svg class="wht-hero__edge" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">

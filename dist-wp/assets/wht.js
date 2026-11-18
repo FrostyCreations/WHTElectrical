@@ -9,21 +9,46 @@
     if (!site) return;
 
     /* ---------- Hero video ----------
-       6.5 MB is too much to send to a device that cannot see it. At 860px and
-       below, wht.css drops the bolt clip-path and lays the blue panel flat over
-       the whole hero, so only the poster photograph shows through — that is the
-       breakpoint this must match. If the hero breakpoint in the stylesheet moves,
-       move this with it. Reduced-motion visitors keep the poster too. */
+       The video is decoration, so it never competes with the page for
+       bandwidth. Phones and tablets (below 1024px), Save-Data connections and
+       reduced-motion visitors keep the photograph and never download it. On
+       desktop it waits for the page's load event and then 3 seconds, or for
+       the visitor's first scroll, mouse move or click, whichever comes first.
+       Below 861px wht.css also lays the blue panel flat over the hero, so
+       only the photo would show through there anyway. */
     var heroVideo = site.querySelector('.wht-hero__video');
+    if (heroVideo) {
+        /* wht.css keeps the video transparent over the photo until this. */
+        var showVideo = function () { heroVideo.classList.add('is-playing'); };
+        if (!heroVideo.paused) showVideo();
+        else heroVideo.addEventListener('playing', showVideo, { once: true });
+    }
+    var conn = navigator.connection;
     if (heroVideo && heroVideo.dataset.src &&
-        window.matchMedia('(min-width: 861px)').matches &&
+        window.matchMedia('(min-width: 1024px)').matches &&
+        !(conn && conn.saveData) &&
         !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        /* The autoplay attribute is on the element but inert until a src exists.
-           Setting it here is what starts playback, and it is also what lets the
-           browser resume by itself after the tab has been in the background. */
-        heroVideo.src = heroVideo.dataset.src;
-        var playing = heroVideo.play();
-        if (playing && playing.catch) playing.catch(function () { /* autoplay blocked: poster stays */ });
+        var startVideo = function () {
+            if (heroVideo.src) return;
+            ['scroll', 'mousemove', 'pointerdown'].forEach(function (t) {
+                window.removeEventListener(t, startVideo);
+            });
+            var webm = heroVideo.dataset.srcWebm;
+            /* The autoplay attribute is on the element but inert until a src
+               exists. Setting it here is what starts playback, and it is also
+               what lets the browser resume by itself after the tab has been in
+               the background. */
+            heroVideo.src = webm && heroVideo.canPlayType('video/webm; codecs="vp9"') ? webm : heroVideo.dataset.src;
+            heroVideo.load();
+            var playing = heroVideo.play();
+            if (playing && playing.catch) playing.catch(function () { /* autoplay blocked: the photo stays */ });
+        };
+        ['scroll', 'mousemove', 'pointerdown'].forEach(function (t) {
+            window.addEventListener(t, startVideo, { passive: true });
+        });
+        var afterLoad = function () { window.setTimeout(startVideo, 3000); };
+        if (document.readyState === 'complete') afterLoad();
+        else window.addEventListener('load', afterLoad, { once: true });
     }
 
     /* ---------- Current page marker ----------

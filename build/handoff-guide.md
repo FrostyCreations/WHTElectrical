@@ -17,7 +17,7 @@ assets/                          upload this whole folder to the server
   wht.js                         drawer, search, FAQ accordions, hero video, tracking
   photos/                        10 real WHT job photographs, web-sized
   img/                           the vector logo (SVG + PNG fallback)
-  video/wht-hero.mp4             homepage hero video, 6.5 MB
+  video/wht-hero.webm, .mp4      homepage hero video, 637 KB / 907 KB
 
 elementor/
   00-sitewide-head.html          fonts + stylesheet, goes in <head> sitewide

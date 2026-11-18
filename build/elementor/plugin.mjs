@@ -19,7 +19,10 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ROUTES } from '../layout.mjs';
+import { MODE, ROUTES, heroMedia, heroPreload, fontFaces, fontPreloads } from '../layout.mjs';
+import { pages } from '../pages.mjs';
+
+MODE.wp = true;   // absolute /assets/... paths, as WordPress serves them
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const SRC = join(root, 'dist-wp', 'index.html');
@@ -40,9 +43,13 @@ const between = (s, start, end, label) => {
     return s.slice(a + start.length, b);
 };
 
-const skipAndSprite = between(body, '<div class="wht-site">', '<header', 'icon sprite').trim();
-const header = '<header' + between(body, '<header', '</header>', 'header') + '</header>';
-const footer = between(body, '</main>', '\n</div>', 'footer block').trim();
+/* Developer notes in HTML comments ("social icons removed…", "Tab 8")
+   help in the static build but should not be readable in the live
+   page source, so the chrome ships without them. */
+const noComments = (s) => s.replace(/<!--(?!\[if)[\s\S]*?-->[ \t]*\n?/g, '');
+const skipAndSprite = noComments(between(body, '<div class="wht-site">', '<header', 'icon sprite')).trim();
+const header = noComments('<header' + between(body, '<header', '</header>', 'header') + '</header>');
+const footer = noComments(between(body, '</main>', '\n</div>', 'footer block')).trim();
 
 /* Nowdoc, so nothing in the markup is interpolated or needs escaping.
    Guard against the terminator appearing in the markup itself. */
@@ -83,7 +90,7 @@ const php = `<?php
 /**
  * Plugin Name: WHT Electrical — site chrome
  * Description: Header, footer, drawer, search overlay and mobile bar for the WHT site, plus the stylesheets and script. Does the job Elementor Theme Builder would, without needing Elementor Pro.
- * Version:     1.0.0
+ * Version:     1.2.0
  * Author:      Big On Digital
  *
  * GENERATED FILE — do not edit.
@@ -108,9 +115,13 @@ add_action('wp_enqueue_scripts', function () {
     $dir  = untrailingslashit(ABSPATH) . '/assets';
     $v    = function ($f) use ($dir) { return file_exists("$dir/$f") ? filemtime("$dir/$f") : null; };
 
-    wp_enqueue_style('wht-fonts',
-        'https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap',
-        [], null);
+    /* Fonts are self-hosted and printed in <head> (see Page speed below);
+       Google's copy only comes back if that is switched off. */
+    if (!wht_perf('fonts')) {
+        wp_enqueue_style('wht-fonts',
+            'https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap',
+            [], null);
+    }
     wp_enqueue_style('wht', "$base/wht.css", [], $v('wht.css'));
     wp_enqueue_style('wht-elementor', "$base/wht-elementor.css", ['wht'], $v('wht-elementor.css'));
     /* jquery: wht.js listens for Elementor Pro's jQuery submit_success event. */
@@ -323,9 +334,30 @@ function wht_chrome_import($p, $file) {
 }
 `;
 
+/* ---------- Page speed section ----------
+   Hand-written PHP in plugin-perf.php, with the values that must match
+   the static build filled in from layout.mjs and pages.mjs. */
+const perfData = {
+    heroMedia: heroMedia(),
+    heroPreload: heroPreload(),
+    fontPreloads: fontPreloads(),
+    fontFaces: fontFaces(),
+    descriptions: Object.fromEntries(pages.map((p) => [ROUTES[p.key].wp, p.description])),
+};
+const perfJson = JSON.stringify(perfData, null, 1);
+if (/^WHT_PERF_JSON/m.test(perfJson)) throw new Error('perf data contains the WHT_PERF_JSON nowdoc terminator');
+const security = readFileSync(join(root, 'build', 'elementor', 'plugin-security.php'), 'utf8')
+    .replace(/^<\?php\s*/, '');
+const perf = readFileSync(join(root, 'build', 'elementor', 'plugin-perf.php'), 'utf8')
+    .replace(/^<\?php\s*/, '')
+    .replace('__WHT_PERF_DATA__', () => perfJson);
+if (Object.keys(perfData.descriptions).length !== Object.keys(ROUTES).length) {
+    throw new Error('every page needs a meta description');
+}
+
 const outDir = join(root, 'dist-plugin', 'wht-chrome');
 mkdirSync(outDir, { recursive: true });
-writeFileSync(join(outDir, 'wht-chrome.php'), php);
+writeFileSync(join(outDir, 'wht-chrome.php'), php + '\n' + perf + '\n' + security);
 /* The templates travel inside the plugin, so the import needs no file upload. */
 for (const p of PAGES) {
     writeFileSync(join(outDir, p.file), readFileSync(join(root, 'dist-elementor', p.file), 'utf8'));

@@ -65,6 +65,42 @@ export const href = (key, hash = '') => {
 export const asset = (p) => (MODE.wp ? '/assets/' : 'assets/') + p;
 export const canonical = (key) => SITE.domain + ROUTES[key].wp;
 
+/* ---------- Fonts ----------
+   Self-hosted, so no page waits on fonts.googleapis.com and then
+   fonts.gstatic.com before it can paint. One variable file per family
+   (Latin subset, from Fontsource) covers every weight wht.css uses:
+   Inter 400-700 and Exo 2 600-800. The family names match wht.css, so
+   nothing there changes. Both files are preloaded: Exo 2 sets the hero
+   headline and Inter the hero copy, so both are needed for the first paint.
+   The WordPress plugin inlines the same @font-face rules (plugin.mjs). */
+export const FONTS = [
+    { family: 'Exo 2', file: 'fonts/exo-2-latin-wght.woff2', weight: '100 900' },
+    { family: 'Inter', file: 'fonts/inter-latin-wght.woff2', weight: '100 900' },
+];
+const LATIN = 'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
+export const fontFaces = () => FONTS.map((f) =>
+    `@font-face{font-family:'${f.family}';font-style:normal;font-display:swap;font-weight:${f.weight};` +
+    `src:url(${asset(f.file)}) format('woff2');unicode-range:${LATIN}}`).join('');
+export const fontPreloads = () => FONTS.map((f) =>
+    `<link rel="preload" as="font" type="font/woff2" href="${asset(f.file)}" crossorigin>`);
+
+/* ---------- Homepage hero backdrop ----------
+   The photograph is a real <img>, not the video's poster. It is the
+   page's Largest Contentful Paint, and an <img> is what can take
+   fetchpriority, srcset and a matching preload: phones get the 800px
+   file, desktops the 1280px one. The video sits on top of it with no
+   poster and stays invisible until it is actually playing (wht.js adds
+   .is-playing), so the photo is what shows until then — and for good on
+   phones, which never load the video at all. */
+const HERO_SRCSET = () => `${asset('photos/hero-solar-roof-mobile.webp')} 800w, ${asset('photos/hero-solar-roof.webp')} 1280w`;
+export const heroMedia = () => `<img class="wht-hero__poster" src="${asset('photos/hero-solar-roof.webp')}"
+        srcset="${HERO_SRCSET()}" sizes="100vw"
+        width="1280" height="720" alt="" fetchpriority="high" decoding="sync">
+    <video class="wht-hero__video" data-src="${asset('video/wht-hero.mp4')}" data-src-webm="${asset('video/wht-hero.webm')}"
+        autoplay muted loop playsinline preload="none" aria-hidden="true"></video>`;
+export const heroPreload = () =>
+    `<link rel="preload" as="image" href="${asset('photos/hero-solar-roof.webp')}" imagesrcset="${HERO_SRCSET()}" imagesizes="100vw" type="image/webp" fetchpriority="high">`;
+
 export const esc = (s) => String(s)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -226,10 +262,8 @@ export const head = (page) => {
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231E2F4D'/%3E%3Cpath d='M17 4 8 18h6l-2 10 10-15h-6z' fill='%23FFC72C'/%3E%3C/svg%3E">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-${page.preload ? `    <link rel="preload" as="image" href="${asset(page.preload)}" fetchpriority="high">\n` : ''}    <link rel="stylesheet" href="${asset('wht.css')}">
+${page.key === 'home' ? `    ${heroPreload()}\n` : ''}${fontPreloads().map((l) => `    ${l}\n`).join('')}    <style>${fontFaces()}</style>
+    <link rel="stylesheet" href="${asset('wht.css')}">
 
 ${blocks.join('\n')}
 </head>
