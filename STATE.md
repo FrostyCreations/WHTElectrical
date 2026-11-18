@@ -149,6 +149,18 @@ In order (repo work first, then wp-admin, then off-site):
 - **On 19 Nov:** in GA4 Admin -> Events -> Recent events, star
   generate_lead, click_call and click_whatsapp as key events (they only
   appear once GA has processed them, up to 24 h).
+- **Form email (SMTP), not finished:** mail is at Xneelo
+  (MX mail.whtelectrical.co.za; SPF includes spf.host-h.net, ?all; DKIM
+  selector `xneelo`; NO DMARC: suggest `_dmarc` TXT
+  `v=DMARC1; p=none; rua=mailto:info@whtelectrical.co.za`). FluentSMTP
+  installed and configured: From WHT Electrical <info@...>, host
+  mail.whtelectrical.co.za:587 TLS (cert valid), user info@..., Force From
+  on. The user entered the password; the test gave "SMTP Error: Could not
+  authenticate." **FluentSMTP is now DEACTIVATED** (settings kept), because
+  a failing connection stops ALL site mail, leads included; the form is
+  back on PHP mail. Next: check/reset the info@ password in konsoleH,
+  reactivate, re-enter it, send a test, and only leave it active if the
+  test succeeds.
 - WP-Optimize showed a setup wizard offering to turn on minify/"lighter
   files": exited WITHOUT saving. Don't accept it: it can reorder CSS.
   Purge reliably via the admin-bar "Purge cache for all pages" link.
