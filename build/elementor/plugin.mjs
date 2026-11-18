@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODE, ROUTES, heroMedia, heroPreload, fontFaces, fontPreloads, plain, schemaNodes } from '../layout.mjs';
+import { MODE, ROUTES, SITE, heroMedia, heroPreload, fontFaces, fontPreloads, plain, schemaNodes } from '../layout.mjs';
 import { pages } from '../pages.mjs';
 
 MODE.wp = true;   // absolute /assets/... paths, as WordPress serves them
@@ -362,7 +362,9 @@ const perfData = {
     descriptions: Object.fromEntries(pages.map((p) => [ROUTES[p.key].wp, p.description])),
     titles: Object.fromEntries(pages.map((p) => [ROUTES[p.key].wp, plain(p.title)])),
     ...schemaNodes(pages),
+    ga4: SITE.ga4,
 };
+if (SITE.ga4 && !/^(G|GTM)-[A-Z0-9]+$/.test(SITE.ga4)) throw new Error(`SITE.ga4 is not a GA4 Measurement ID: ${SITE.ga4}`);
 if (Object.keys(perfData.titles).length !== Object.keys(ROUTES).length) {
     throw new Error('every page needs an SEO title');
 }

@@ -33,6 +33,8 @@ export const SITE = {
     domain: 'https://whtelectrical.co.za',
     street: '32 Webb Street', suburb: 'Northmead', town: 'Benoni', region: 'Gauteng',
     founded: '2010',
+    /* Google tag for GA4 (GTM-... or G-...). Empty = no analytics tag. */
+    ga4: 'GTM-KVJ93FWQ',
 };
 
 /* Page key → local preview filename and final WordPress permalink (Tab 2). */

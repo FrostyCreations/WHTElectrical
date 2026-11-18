@@ -13,7 +13,7 @@
        add_filter('wht_perf_jquery_footer', '__return_false');
 
    Switches: meta_description, fonts, jquery_footer, pro_scripts,
-   hero, webp, seo_title, schema.
+   hero, webp, seo_title, schema, ga4.
    --------------------------------------------------------------- */
 
 function wht_perf($what) {
@@ -124,6 +124,22 @@ add_filter('wpseo_schema_graph', function ($graph) {
     if (!empty($d['services'][wht_perf_path()])) $graph[] = $d['services'][wht_perf_path()];
     return $graph;
 }, 20);
+
+/* ---------- Google Analytics 4 (switch: ga4) ----------
+   The tag ID comes from SITE.ga4 in layout.mjs: a Google tag container
+   (GTM-..., Google's current snippet, loads gtm.js and carries the GA4
+   stream itself) or a plain Measurement ID (G-..., gtag.js + config).
+   Not printed for logged-in editors, so WHT's own visits don't count.
+   wht.js sends call, WhatsApp, email, quote and form events via gtag(). */
+add_action('wp_head', function () {
+    if (!wht_perf_front() || !wht_perf('ga4') || current_user_can('edit_posts')) return;
+    $id = wht_perf_data()['ga4'] ?? '';
+    if (!preg_match('/^(G|GTM)-[A-Z0-9]+$/', $id)) return;
+    $gtm = strpos($id, 'GTM-') === 0;
+    echo '<script async src="https://www.googletagmanager.com/' . ($gtm ? 'gtm.js' : 'gtag/js') . '?id=' . esc_attr($id) . "\"></script>\n"
+        . "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());"
+        . ($gtm ? '' : "gtag('config','" . esc_js($id) . "');") . "</script>\n";
+}, 3);
 
 /* Without Yoast, print the same nodes as one graph. */
 add_action('wp_head', function () {

@@ -186,32 +186,49 @@
     if (search) search.addEventListener('click', function (e) { if (e.target === search) closeSearch(); });
 
     /* ---------- GA4 / GTM conversion events (Tab 11) ----------
-       Pushes the named event to dataLayer. Safe no-op without GTM. */
-    site.querySelectorAll('[data-wht-event]').forEach(function (el) {
-        el.addEventListener('click', function () {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ event: el.getAttribute('data-wht-event') });
-        });
+       track() sends the event to GA4 through gtag() when the plugin has
+       printed the GA4 tag, and always pushes it to dataLayer too, so a
+       GTM container would also see it. Safe no-op without either.
+       One delegated listener: links with data-wht-event use that name;
+       links without it (Elementor's own buttons, which cannot carry
+       custom attributes on this licence) are named by where they go. */
+    function track(name) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: name });
+        if (typeof window.gtag === 'function') window.gtag('event', name);
+    }
+    function linkEvent(a) {
+        var named = a.getAttribute('data-wht-event');
+        if (named) return named;
+        var h = a.getAttribute('href') || '';
+        if (/^tel:/i.test(h)) return 'click_call';
+        if (/^mailto:/i.test(h)) return 'click_email';
+        if (/(wa\.me|whatsapp\.com)\//i.test(h)) return 'click_whatsapp';
+        if (/(^|\/)contact(\/|\.html)?(#.*)?$/i.test(h.replace(/^https?:\/\/[^/]+/i, ''))
+            && a.closest('.wht-btn, .elementor-button-wrapper, .elementor-widget-button')) return 'quote_start';
+        return '';
+    }
+    site.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('a[href]') : null;
+        if (!a || !site.contains(a)) return;
+        var name = linkEvent(a);
+        if (name) track(name);
     });
 
     /* ---------- Elementor Pro enquiry form (WordPress) ----------
        Tab 11: quote_start when a visitor first starts the form,
        quote_submit + generate_lead when the submission succeeds.
        Elementor announces success with a jQuery event, not a DOM one. */
-    function push(name) {
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: name });
-    }
     site.querySelectorAll('.wht-form .elementor-form').forEach(function (f) {
         f.addEventListener('focusin', function started() {
-            push('quote_start');
+            track('quote_start');
             f.removeEventListener('focusin', started);
         });
     });
     if (window.jQuery) {
         window.jQuery(document).on('submit_success', '.wht-form .elementor-form', function () {
-            push('quote_submit');
-            push('generate_lead');
+            track('quote_submit');
+            track('generate_lead');
         });
     }
 
@@ -235,8 +252,7 @@
                 status.textContent = 'Please complete the required fields marked with an asterisk.';
                 return;
             }
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ event: 'quote_submit' });
+            track('quote_submit');
             status.classList.add('is-ok');
             status.textContent = 'Thanks — this demo form is not connected yet. Please call or WhatsApp WHT for now.';
             form.reset();
