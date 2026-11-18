@@ -25,7 +25,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resetIds, box, heading, text, button, html, dims } from './lib.mjs';
-import { MODE, SITE, href } from '../layout.mjs';
+import { MODE, SITE, href, heroMedia } from '../layout.mjs';
 
 /* layout.mjs keeps waHref private, so the same link is built here from the
    same SITE.wa number rather than duplicating the number itself. */
@@ -37,9 +37,7 @@ resetIds('wht-home-hero');
 
 /* ---------- The decorative layers, copied exactly ---------- */
 const DECOR = `<div class="wht-hero__media">
-    <video class="wht-hero__video" data-src="/assets/video/wht-hero.mp4"
-        poster="/assets/photos/hero-solar-roof.jpg"
-        autoplay muted loop playsinline preload="none" aria-hidden="true"></video>
+    ${heroMedia()}
 </div>
 <div class="wht-hero__panel" aria-hidden="true"></div>
 <svg class="wht-hero__edge" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
