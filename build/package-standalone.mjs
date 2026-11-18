@@ -14,7 +14,7 @@
      is 11.7 MB across twelve files. The CDN link stays; without a connection
      the pages fall back to the Segoe UI / system stack already in the font
      declarations.
-   - The 6.5 MB hero video, which would be ~8.7 MB once base64-encoded. The
+   - The hero video, which would be over a megabyte once base64-encoded. The
      poster photograph is inlined and the video streams from the review
      deployment. If that is ever taken down, the hero shows the still.
    ========================================================= */
@@ -54,6 +54,10 @@ const dataUri = (rel) => {
     return uri;
 };
 
+const GOOGLE_FONTS = '<link rel="preconnect" href="https://fonts.googleapis.com">\n'
+    + '    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
+    + '    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">';
+
 const css = readFileSync(join(root, 'assets', 'wht.css'), 'utf8');
 const js = readFileSync(join(root, 'assets', 'wht.js'), 'utf8');
 
@@ -82,8 +86,15 @@ for (const page of PAGES) {
           preloading it would download the same bytes twice. */
     html = html.replace(/\s*<link rel="preload" as="image"[^>]*>/g, '');
 
-    /* 4. The hero video: inline its poster, stream the file itself. */
+    /* 4. The hero video streams; the photo under it is inlined below. One
+          image each, so the responsive srcset copies are dropped. */
     html = html.replace(/data-src="assets\/video\/wht-hero\.mp4"/g, `src="${VIDEO_URL}"`);
+    html = html.replace(/\s(?:data-src-webm|srcset|sizes)="[^"]*"/g, '');
+
+    /* 4b. Fonts. The self-hosted files are not embedded (they would add
+           ~120 KB to every page), so a standalone page asks Google instead. */
+    html = html.replace(/\s*<link rel="preload" as="font"[^>]*>/g, '');
+    html = html.replace(/<style>@font-face[^<]*<\/style>/, GOOGLE_FONTS);
 
     /* 5. Every remaining local image. */
     html = html.replace(/(src|poster)="(assets\/(?:photos|img)\/[^"]+)"/g, (m, attr, rel) => {
