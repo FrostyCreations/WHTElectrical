@@ -117,6 +117,23 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_script('wht', "$base/wht.js", ['jquery'], $v('wht.js'), true);
 }, 20);
 
+/* wht.css MUST print after Elementor's frontend.min.css. Its .e-con rule
+   sets every container's margins, position and z-index at the same
+   specificity as .wht-container and .wht-hero__inner, so whichever loads
+   last wins. When Elementor's came last (18 Nov 2026) every container lost
+   margin:0 auto and sat against the left edge, and the hero copy dropped
+   behind the blue panel. Making Elementor's handle a dependency means
+   WordPress prints it first, however late Elementor enqueues it. Added at
+   print time, when Elementor has registered it; never added if Elementor
+   is off, because a missing dependency would stop wht.css printing. */
+add_action('wp_print_styles', function () {
+    $styles = wp_styles();
+    if (isset($styles->registered['wht'], $styles->registered['elementor-frontend'])
+        && !in_array('elementor-frontend', $styles->registered['wht']->deps, true)) {
+        $styles->registered['wht']->deps[] = 'elementor-frontend';
+    }
+}, 0);
+
 /* Every rule in wht.css is scoped to .wht-site. Without this class the
    site renders completely unstyled. */
 add_filter('body_class', function ($classes) {
