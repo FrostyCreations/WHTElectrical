@@ -126,8 +126,15 @@ In order (repo work first, then wp-admin, then off-site):
   Indexing requested (confirmed): Home, Electrical, Fault Finding, COC
   (was not on Google), Solar, Plumbing, About. Daily quota then ran out:
   **request Gate Motors, Property Maintenance and Contact on 19 Nov.**
-- Next: Bing Webmaster Tools (sign in, "Import from Google Search Console"),
-  then GA4.
+- **Bing Webmaster Tools:** imported from Search Console (read-only GSC
+  access granted by the user). Bing already had click data for the site.
+  Both sitemaps imported (processing). All 12 pages submitted via URL
+  Submission ("12 URLs submitted successfully").
+- Search Console and Bing sit under the Big On Digital Google account; add
+  a WHT-owned account as Owner once WHT has one.
+- Next: GA4 via Tag Manager (plan item 8). Burst Statistics is already
+  installed and counting visits, so GA4 is optional unless WHT wants
+  Google Ads or conversion tracking.
 
 ## 18 Nov 2026: security and Agentic Browsing, LIVE
 
