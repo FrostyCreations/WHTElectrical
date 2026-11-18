@@ -132,9 +132,26 @@ In order (repo work first, then wp-admin, then off-site):
   Submission ("12 URLs submitted successfully").
 - Search Console and Bing sit under the Big On Digital Google account; add
   a WHT-owned account as Owner once WHT has one.
-- Next: GA4 via Tag Manager (plan item 8). Burst Statistics is already
-  installed and counting visits, so GA4 is optional unless WHT wants
-  Google Ads or conversion tracking.
+- **GA4 LIVE** (257155b): new Analytics account "WHT Electrical" (linked
+  to the Big On Digital org; optional data sharing all off), property
+  whtelectrical.co.za (a416867923 / p565079897, SA time, ZAR), web stream
+  "WHT Electrical website". Google issued a Google tag container
+  **GTM-KVJ93FWQ** (gtm.js snippet, no G- config line); `SITE.ga4` in
+  layout.mjs, printed by plugin-perf.php for visitors only (not logged-in
+  editors). Switch: ga4.
+- **Events:** wht.js now uses one delegated listener; links without
+  data-wht-event are named by href (tel: -> click_call, wa.me ->
+  click_whatsapp, mailto: -> click_email, /contact/ buttons -> quote_start),
+  so Elementor buttons are tracked. Contact form: quote_start,
+  quote_submit, generate_lead. Verified by hand-loading the tag on a
+  logged-in page: page_view, click_whatsapp, quote_start, click_call all
+  reached /g/collect.
+- **On 19 Nov:** in GA4 Admin -> Events -> Recent events, star
+  generate_lead, click_call and click_whatsapp as key events (they only
+  appear once GA has processed them, up to 24 h).
+- WP-Optimize showed a setup wizard offering to turn on minify/"lighter
+  files": exited WITHOUT saving. Don't accept it: it can reorder CSS.
+  Purge reliably via the admin-bar "Purge cache for all pages" link.
 
 ## 18 Nov 2026: security and Agentic Browsing, LIVE
 
