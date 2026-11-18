@@ -119,7 +119,15 @@ In order (repo work first, then wp-admin, then off-site):
 - "Hello World" post and "Sample Page" moved to the trash (user OK'd);
   cache purged. Sitemap index = page-sitemap only, listing exactly the 12
   pages. /hello-world/ still 301s home via WHT Redirects.
-- Next: Search Console + Bing (submit /sitemap_index.xml), then GA4.
+- **Google Search Console:** URL-prefix property https://whtelectrical.co.za/
+  verified by HTML tag (code in Yoast -> Site connections; don't remove it).
+  The property already had history: an old /sitemap.xml (2023, 35 pages),
+  which now 301s to the Yoast index. Submitted sitemap_index.xml.
+  Indexing requested (confirmed): Home, Electrical, Fault Finding, COC
+  (was not on Google), Solar, Plumbing, About. Daily quota then ran out:
+  **request Gate Motors, Property Maintenance and Contact on 19 Nov.**
+- Next: Bing Webmaster Tools (sign in, "Import from Google Search Console"),
+  then GA4.
 
 ## 18 Nov 2026: security and Agentic Browsing, LIVE
 
