@@ -1,5 +1,5 @@
 /* =========================================================
-   Put the WHT Security and WHT Performance blocks into the live .htaccess.
+   Put the WHT Security, Performance and Redirects blocks into the live .htaccess.
 
        node build/server/merge-htaccess.mjs <live> <out>
 
@@ -29,6 +29,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const BLOCKS = [
     { name: 'WHT Security', file: 'htaccess-security.txt' },
     { name: 'WHT Performance', file: 'htaccess-performance.txt' },
+    { name: 'WHT Redirects', file: 'htaccess-redirects.txt' },
 ].filter(({ file }) => existsSync(join(here, file)));
 const live = existsSync(livePath) ? readFileSync(livePath, 'utf8') : '';
 const eol = live.includes('\r\n') ? '\r\n' : '\n';

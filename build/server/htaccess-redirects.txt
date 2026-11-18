@@ -1,0 +1,37 @@
+# BEGIN WHT Redirects
+# Managed by the GitHub deploy (build/server/htaccess-redirects.txt).
+# The old site's indexed URLs (1 services page, 10 blog posts, and its
+# category, tag, author and feed archives) each go to the closest page
+# on the new site, so their search rankings carry over instead of 404s.
+# Map checked against the old sitemap: build/testserver/htaccess-production.txt.
+# www -> bare domain and http -> https are already done by the server
+# and WordPress, so they are not repeated here.
+
+<IfModule mod_alias.c>
+# The old Services page: the new site splits it into four pillars.
+# Electrical is the closest match and the core of the business.
+Redirect 301 /services/ https://whtelectrical.co.za/electrical/
+
+# The old blog posts (theme demo content), each to the closest page.
+Redirect 301 /troubleshoot-electrical-equipment/ https://whtelectrical.co.za/electrical/fault-finding-repairs/
+Redirect 301 /choosing-the-best-light-bulb/      https://whtelectrical.co.za/electrical/
+Redirect 301 /switching-to-energy-saving-bulbs/  https://whtelectrical.co.za/electrical/
+Redirect 301 /how-electricity-has-changed/       https://whtelectrical.co.za/electrical/
+Redirect 301 /the-right-tools-for-the-job/       https://whtelectrical.co.za/electrical/
+Redirect 301 /major-energy-saving-tips-tricks/   https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /solar-panels-on-a-small-budget/    https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /is-power-plant-growth-good/        https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /are-there-other-affordable-options/ https://whtelectrical.co.za/solar-backup-power/
+Redirect 301 /hello-world/                       https://whtelectrical.co.za/
+</IfModule>
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+# Archives and feeds: the new site has no blog, so these go home.
+RewriteRule ^category/.*$      https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^tag/.*$           https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^author/.*$        https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^feed/?$           https://whtelectrical.co.za/ [L,R=301]
+RewriteRule ^comments/feed/?$  https://whtelectrical.co.za/ [L,R=301]
+</IfModule>
+# END WHT Redirects
