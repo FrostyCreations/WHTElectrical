@@ -13,7 +13,7 @@
        add_filter('wht_perf_jquery_footer', '__return_false');
 
    Switches: meta_description, fonts, jquery_footer, pro_scripts,
-   hero, webp, seo_title, schema, ga4.
+   hero, webp, seo_title, schema, ga4, og_image, main.
    --------------------------------------------------------------- */
 
 function wht_perf($what) {
@@ -140,6 +140,30 @@ add_action('wp_head', function () {
         . "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());"
         . ($gtm ? '' : "gtag('config','" . esc_js($id) . "');") . "</script>\n";
 }, 3);
+
+/* ---------- Link previews (switch: og_image) ----------
+   WhatsApp, Facebook and LinkedIn show /assets/og-image.jpg
+   (1200 x 630) when a page has no image of its own in Yoast. */
+add_action('wpseo_add_opengraph_images', function ($images) {
+    if (!wht_perf_front() || !wht_perf('og_image') || $images->has_images()) return;
+    $images->add_image([
+        'url'    => home_url('/assets/og-image.jpg'),
+        'width'  => 1200,
+        'height' => 630,
+        'type'   => 'image/jpeg',
+    ]);
+});
+
+/* ---------- Main landmark (switch: main) ----------
+   The header's "Skip to content" link points at #wht-main, as in the
+   static build. Elementor Canvas pages have no <main>, so the page
+   content is wrapped in one. wht.css has no rules for <main>, so the
+   layout is unchanged. Only for the singular page being served. */
+add_filter('the_content', function ($html) {
+    if (!wht_perf_front() || !wht_perf('main') || !is_singular() || !in_the_loop() || !is_main_query()
+        || !is_string($html) || $html === '' || strpos($html, 'id="wht-main"') !== false) return $html;
+    return '<main id="wht-main">' . $html . '</main>';
+}, 99);
 
 /* Without Yoast, print the same nodes as one graph. */
 add_action('wp_head', function () {
