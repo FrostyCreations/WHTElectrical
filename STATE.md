@@ -1,14 +1,47 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 18 November 2026 (speed/security deploy rolled back, layout fix live; see the 18 Nov section).
+Last updated: 18 November 2026 (speed work live in two checked stages; security work not yet re-applied; see the 18 Nov sections).
 
 ---
 
+## 18 Nov 2026 (later): speed work re-applied in two stages, LIVE
+
+Checked on the live site after each stage (headless Chromium at 1440 and
+390, plus Lighthouse from the cloud session):
+
+- **Stage 1** (FrostyCreations/WHTElectrical#5): .htaccess WHT Performance
+  block (1-year cache, gzip), deploy backup + drift check, video 907 KB MP4 +
+  637 KB WebM with the delayed loader, WebP and font files, minified CSS,
+  robots.txt -> Yoast `sitemap_index.xml`. Plugin unchanged.
+- **Stage 2** (FrostyCreations/WHTElectrical#6): plugin 1.1.0 with
+  `build/elementor/plugin-perf.php` MINUS forced Elementor CSS print method,
+  stylesheet inlining and Hello style dequeue. Self-hosted fonts, hero WebP
+  `<img>` + preload (old live hero upgraded on the fly), WebP photos,
+  Yoast description fallback, jQuery in the footer, Pro scripts only on Contact.
+- Verified: layout centred, Elementor CSS before wht.css, Exo 2/Inter loaded,
+  no Google Fonts, 5/5 homepage photos WebP, jQuery not in <head>, Pro scripts
+  + `elementorProFrontend` on Contact only, FAQ accordion opens, a meta
+  description on every page, no JS errors, no 4xx.
+
+| Lighthouse (live home) | before | after stage 2 |
+| --- | --- | --- |
+| Mobile perf | 63 | 94 |
+| Desktop perf | 67 | 92 |
+| SEO | 85-92 | 100 |
+| Mobile LCP | 6.2 s | 1.5 s |
+| Bytes | 1.4 MB | 418 KB |
+
+What still holds the scores back: the server's response time (about 2.5 s to
+first byte from the cloud session; a page-cache plugin would help most) and
+Elementor's/Hello's render-blocking CSS, deliberately left alone. The security
+work (htaccess-security.txt, plugin-security.php in commit f451b5f) is NOT
+live; re-apply it the same way, one stage at a time.
+
 ## 18 Nov 2026: speed + security deploy, broken layout, rollback
 
-**Where things stand:** the live site is back to the 16 Oct state plus one
-fix (below). The page-speed and security work is NOT live. It is all in git
+**Where things stood at the time:** the live site went back to the 16 Oct
+state plus one fix (below); the speed work was then re-applied (section above). It is all in git
 history: merge `5ca3464` (FrostyCreations/WHTElectrical#1), reverted by
 FrostyCreations/WHTElectrical#2. Bring it back in small pieces, checking the
 live page after each; do not re-merge it in one go.
