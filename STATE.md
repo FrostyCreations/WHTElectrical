@@ -22,17 +22,17 @@ address, phone or service area.
 
 In order (repo work first, then wp-admin, then off-site):
 
-1. **Approved SEO titles.** Feed each page's `pages.mjs` `title` to Yoast
+1. **(DONE 18 Nov) Approved SEO titles.** Feed each page's `pages.mjs` `title` to Yoast
    (`wpseo_title` filter in the plugin, keyed by path like the
    descriptions), or set them per page in Yoast while logged in. Biggest
    on-page win.
-2. **LocalBusiness schema.** `layout.mjs` already builds
+2. **(DONE 18 Nov) LocalBusiness schema.** `layout.mjs` already builds
    `businessSchema()`, `serviceSchema()` and `breadcrumbSchema()` for the
    static build. Add them to Yoast's graph via `wpseo_schema_graph` (do not
    print a second, competing graph). Use type Electrician (also
    HomeAndConstructionBusiness), with NAP from `SITE`, areaServed, and the
    services. No aggregateRating until there are genuine reviews.
-3. **301s for the 35 dead URLs.** The map is in
+3. **(DONE 18 Nov) 301s for the 35 dead URLs.** The map is in
    `build/testserver/htaccess-production.txt` sections 4-6. Ship it as a
    third marked .htaccess block ("WHT Redirects"); `merge-htaccess.mjs`
    already handles named blocks. Skip its www/https rules if Xneelo already
@@ -77,7 +77,30 @@ In order (repo work first, then wp-admin, then off-site):
     non-duplicate content for each;
   - more FAQs drawn from questions customers actually ask.
 
-## 18 Nov 2026 (latest): security and Agentic Browsing, LIVE
+## 18 Nov 2026 (local session): plan items 1-3 LIVE
+
+- **Titles** (59284ac): `wpseo_title` / `wpseo_opengraph_title` from
+  `pages.mjs`; a title typed into Yoast for a page still wins. Verified on
+  all 12 live pages.
+- **Schema** (59284ac): `schemaNodes()` in `layout.mjs` -> Yoast's graph via
+  `wpseo_schema_graph`: Electrician + HomeAndConstructionBusiness
+  (`#business`, NAP, logo, contactPoint x2, areaServed, OfferCatalog of the
+  7 services), WebSite.publisher -> #business, and a Service node on each
+  service page. One graph per page. Switches `seo_title`, `schema`.
+- **og-image.jpg** was never uploaded (404 live); build + deploy now ship
+  it. 200 live.
+- **Redirects** (7e8e823): `build/server/htaccess-redirects.txt`, third
+  merged block "WHT Redirects". All 16 rules return 301 to the mapped page;
+  /, pages, wp-login, sitemap, robots unaffected. www/https were already
+  handled by the server, so not repeated.
+- Layout checked in the browser after deploy 1; no console errors.
+
+**Found for wp-admin:** Yoast's sitemap lists the WordPress "Hello World"
+post (/2026/10/14/hello-world/), "Sample Page", category and author
+sitemaps. Trash Hello World + Sample Page; turn off category/author
+archives in Yoast. Then items 4 onward.
+
+## 18 Nov 2026: security and Agentic Browsing, LIVE
 
 - **Security stage 1** (FrostyCreations/WHTElectrical#8): .htaccess WHT
   Security block. Live: all six headers sent; xmlrpc.php, readme files,
