@@ -1,7 +1,47 @@
 # WHT Electrical — where things stand
 
 Read this first in a new session. It replaces having to re-derive anything.
-Last updated: 16 October 2026 (Contact published with a working form; all 12 pages live).
+Last updated: 18 November 2026 (speed/security deploy rolled back, layout fix live; see the 18 Nov section).
+
+---
+
+## 18 Nov 2026: speed + security deploy, broken layout, rollback
+
+**Where things stand:** the live site is back to the 16 Oct state plus one
+fix (below). The page-speed and security work is NOT live. It is all in git
+history: merge `5ca3464` (FrostyCreations/WHTElectrical#1), reverted by
+FrostyCreations/WHTElectrical#2. Bring it back in small pieces, checking the
+live page after each; do not re-merge it in one go.
+
+**What happened:** #1 deployed cleanly (every step green), but the site came
+out "all left aligned" with the hero copy invisible. Reverting the files
+(#2, plus a one-off workflow that restored the backed-up .htaccess,
+robots.txt, CSS, JS and plugin) did NOT fix it.
+
+**Cause, read from the live page:** Elementor's `frontend.min.css` was
+printing AFTER `wht.css`. Its `.e-con` rule sets margin-inline, position and
+z-index at the same specificity as `.wht-container` / `.wht-hero__inner`, so
+the later file wins: containers got 0 side margins, and the hero copy lost
+`z-index: 3` and fell behind the blue panel. The order most likely changed
+because #1's plugin forced Elementor's CSS print method to Internal, which
+Elementor remembers per page until its CSS is regenerated, so reverting files
+did not undo it.
+
+**Fix (live, FrostyCreations/WHTElectrical#3):** `wht` depends on
+`elementor-frontend`, added on `wp_print_styles`, so WordPress always prints
+Elementor's CSS first. Verified on the live site at 1440px and 390px: Home and
+Electrical centred, hero copy visible, no JS errors.
+
+**Lessons for re-applying the speed work:**
+- Never force `elementor_css_print_method`; leave Elementor's CSS settings alone.
+- Any change to stylesheet order or inlining must keep Elementor's
+  frontend.min.css BEFORE wht.css / wht-elementor.css.
+- This session can now load whtelectrical.co.za (environment allowlist), so
+  check the live page (headless Chromium, 1440 + 390) after every deploy.
+
+**Open questions for WHT/user:** on live the hero brandline is white (static
+build: yellow) and the phone hero buttons are not full width. Unknown whether
+that predates 18 Nov.
 
 ---
 
