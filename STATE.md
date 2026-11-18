@@ -116,8 +116,10 @@ In order (repo work first, then wp-admin, then off-site):
   at defaults (20 failures, 4 h lockout): suggest 5 failures and "lock out
   invalid usernames"; WordPress/plugin auto-updates; SMTP (needs the
   mailbox password).
-- Still in the sitemap: the WordPress "Hello World" post
-  (/2026/10/14/hello-world/) and "Sample Page". Trash both (awaiting OK).
+- "Hello World" post and "Sample Page" moved to the trash (user OK'd);
+  cache purged. Sitemap index = page-sitemap only, listing exactly the 12
+  pages. /hello-world/ still 301s home via WHT Redirects.
+- Next: Search Console + Bing (submit /sitemap_index.xml), then GA4.
 
 ## 18 Nov 2026: security and Agentic Browsing, LIVE
 
