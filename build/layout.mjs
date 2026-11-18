@@ -185,15 +185,20 @@ const AREAS = [
 
 const businessSchema = () => ({
     '@context': 'https://schema.org',
-    '@type': 'Electrician',
+    '@type': ['Electrician', 'HomeAndConstructionBusiness'],
     '@id': BUSINESS_ID,
     name: SITE.name,
+    logo: `${SITE.domain}/assets/img/wht-logo-480.png`,
     slogan: SITE.tagline,
     description: 'Electrical, solar, plumbing and property maintenance for residential, commercial and industrial clients. Based in Benoni, serving Gauteng with national project capability.',
     url: SITE.domain + '/',
     image: `${SITE.domain}/assets/og-image.jpg`,
     foundingDate: SITE.founded,
-    telephone: [SITE.tel1, SITE.tel2],
+    telephone: SITE.tel1,
+    contactPoint: [SITE.tel1, SITE.tel2].map((t) => ({
+        '@type': 'ContactPoint', telephone: t, contactType: 'customer service',
+        areaServed: 'ZA', availableLanguage: 'English',
+    })),
     email: SITE.email,
     address: {
         '@type': 'PostalAddress',
@@ -231,6 +236,29 @@ const serviceSchema = (page) => ({
     provider: { '@id': BUSINESS_ID },
     areaServed: AREAS,
 });
+
+/* The same nodes for the WordPress plugin, which adds them to Yoast's
+   graph (one graph per page, so no @context on the nodes). The business
+   node also lists every service page, so Google sees what WHT offers. */
+const node = ({ '@context': _, ...rest }) => rest;
+export const schemaNodes = (pages) => {
+    const services = pages.filter((p) => p.service);
+    return {
+        business: node({
+            ...businessSchema(),
+            hasOfferCatalog: {
+                '@type': 'OfferCatalog',
+                name: 'Services',
+                itemListElement: services.map((p) => ({
+                    '@type': 'Offer',
+                    itemOffered: { '@type': 'Service', name: plain(p.service), url: canonical(p.key) },
+                })),
+            },
+        }),
+        services: Object.fromEntries(services.map((p) => [ROUTES[p.key].wp,
+            { ...node(serviceSchema(p)), '@id': canonical(p.key) + '#service' }])),
+    };
+};
 
 const ld = (obj) => `    <script type="application/ld+json">\n${JSON.stringify(obj, null, 2).replace(/^/gm, '    ')}\n    </script>`;
 

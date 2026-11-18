@@ -13,7 +13,7 @@
        add_filter('wht_perf_jquery_footer', '__return_false');
 
    Switches: meta_description, fonts, jquery_footer, pro_scripts,
-   hero, webp.
+   hero, webp, seo_title, schema.
    --------------------------------------------------------------- */
 
 function wht_perf($what) {
@@ -83,6 +83,58 @@ function wht_perf_yoast_desc($desc) {
 }
 add_filter('wpseo_metadesc', 'wht_perf_yoast_desc');
 add_filter('wpseo_opengraph_desc', 'wht_perf_yoast_desc');
+
+/* ---------- Search titles (switch: seo_title) ----------
+   The approved Tab 5 titles from pages.mjs replace WordPress's
+   "Page - WHT Electrical". A title typed into Yoast for a page by
+   hand still wins, the same way the descriptions only fill blanks. */
+function wht_perf_title($title) {
+    if (!wht_perf_front() || !wht_perf('seo_title') || is_404()) return $title;
+    $id = get_queried_object_id();
+    if ($id && get_post_meta($id, '_yoast_wpseo_title', true) !== '') return $title;
+    return wht_perf_data()['titles'][wht_perf_path()] ?? $title;
+}
+add_filter('wpseo_title', 'wht_perf_title', 20);
+add_filter('wpseo_opengraph_title', 'wht_perf_title', 20);
+add_filter('pre_get_document_title', function ($title) {
+    if (wht_perf_seo_plugin()) return $title;
+    return wht_perf_title($title);
+}, 20);
+
+/* ---------- Business schema (switch: schema) ----------
+   Adds the Electrician business (name, address, phones, service area,
+   services) and, on service pages, a Service node to Yoast's own
+   graph, so the page carries one graph, not two competing ones.
+   No aggregateRating until WHT has genuine reviews. */
+add_filter('wpseo_schema_graph', function ($graph) {
+    if (!wht_perf_front() || !wht_perf('schema') || is_404() || !is_array($graph)) return $graph;
+    $d = wht_perf_data();
+    $biz = $d['business'];
+    foreach ($graph as &$n) {
+        $type = (array) ($n['@type'] ?? []);
+        if (in_array('WebSite', $type, true) && empty($n['publisher'])) {
+            $n['publisher'] = ['@id' => $biz['@id']];
+        }
+        if (in_array('WebPage', $type, true) && is_front_page() && empty($n['about'])) {
+            $n['about'] = ['@id' => $biz['@id']];
+        }
+    }
+    unset($n);
+    $graph[] = $biz;
+    if (!empty($d['services'][wht_perf_path()])) $graph[] = $d['services'][wht_perf_path()];
+    return $graph;
+}, 20);
+
+/* Without Yoast, print the same nodes as one graph. */
+add_action('wp_head', function () {
+    if (!wht_perf_front() || !wht_perf('schema') || is_404() || defined('WPSEO_VERSION')) return;
+    $d = wht_perf_data();
+    $graph = [$d['business']];
+    if (!empty($d['services'][wht_perf_path()])) $graph[] = $d['services'][wht_perf_path()];
+    echo '<script type="application/ld+json">'
+        . wp_json_encode(['@context' => 'https://schema.org', '@graph' => $graph], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        . "</script>\n";
+}, 20);
 
 /* The fonts above replace the Google Fonts request, and Elementor's
    own kit fonts (Roboto) are never seen: the WHT bridge CSS

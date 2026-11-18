@@ -78,7 +78,7 @@ if (MODE.wp) {
     mkdirSync(join(outDir, 'assets'), { recursive: true });
     /* wht-elementor.css only matters on the WordPress build, but it is
        harmless elsewhere and shipping it always keeps the two in step. */
-    for (const f of ['wht.css', 'wht.js', 'wht-elementor.css']) {
+    for (const f of ['wht.css', 'wht.js', 'wht-elementor.css', 'og-image.jpg']) {
         const from = join(root, 'assets', f);
         if (!existsSync(from)) continue;
         if (f.endsWith('.css')) writeFileSync(join(outDir, 'assets', f), minifyCss(readFileSync(from, 'utf8')));

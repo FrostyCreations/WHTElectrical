@@ -246,6 +246,7 @@ jobs:
             for d in img photos video fonts; do echo "-mkdir $R/$d"; done
             echo "put dist-wp/assets/*.css $R/"
             echo "put dist-wp/assets/*.js  $R/"
+            echo "put dist-wp/assets/*.jpg $R/"
             for d in img photos video fonts; do echo "put dist-wp/assets/$d/* $R/$d/"; done
             echo "bye"
           } > /tmp/upload.sftp

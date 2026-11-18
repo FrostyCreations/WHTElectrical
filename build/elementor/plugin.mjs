@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODE, ROUTES, heroMedia, heroPreload, fontFaces, fontPreloads } from '../layout.mjs';
+import { MODE, ROUTES, heroMedia, heroPreload, fontFaces, fontPreloads, plain, schemaNodes } from '../layout.mjs';
 import { pages } from '../pages.mjs';
 
 MODE.wp = true;   // absolute /assets/... paths, as WordPress serves them
@@ -360,7 +360,12 @@ const perfData = {
     fontPreloads: fontPreloads(),
     fontFaces: fontFaces(),
     descriptions: Object.fromEntries(pages.map((p) => [ROUTES[p.key].wp, p.description])),
+    titles: Object.fromEntries(pages.map((p) => [ROUTES[p.key].wp, plain(p.title)])),
+    ...schemaNodes(pages),
 };
+if (Object.keys(perfData.titles).length !== Object.keys(ROUTES).length) {
+    throw new Error('every page needs an SEO title');
+}
 const perfJson = JSON.stringify(perfData, null, 1);
 if (/^WHT_PERF_JSON/m.test(perfJson)) throw new Error('perf data contains the WHT_PERF_JSON nowdoc terminator');
 const security = readFileSync(join(root, 'build', 'elementor', 'plugin-security.php'), 'utf8')
