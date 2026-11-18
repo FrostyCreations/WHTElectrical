@@ -5,6 +5,78 @@ Last updated: 18 November 2026 (speed, security and Agentic Browsing work all li
 
 ---
 
+## NEXT SESSION (local, user logged in to wp-admin): searchability plan
+
+The user's goal: WHT shows up in search as much as possible. The cloud
+session that did the 18 Nov work could not log in; this one can. Work in
+small deploys and check the live site after each one, as on 18 Nov
+(headless Chromium at 1440 + 390, then Lighthouse 13.6). Never force
+Elementor's CSS settings or change stylesheet order (see the 18 Nov
+rollback section).
+
+**Found on the live site (18 Nov):** page titles are WordPress defaults
+("Home - WHT Electrical", "Electrical - WHT Electrical"), not the approved
+Tab 5 titles in `pages.mjs`. The only schema is Yoast's WebSite/WebPage/
+BreadcrumbList plus Elementor's FAQPage. There is no LocalBusiness, no
+address, phone or service area.
+
+In order (repo work first, then wp-admin, then off-site):
+
+1. **Approved SEO titles.** Feed each page's `pages.mjs` `title` to Yoast
+   (`wpseo_title` filter in the plugin, keyed by path like the
+   descriptions), or set them per page in Yoast while logged in. Biggest
+   on-page win.
+2. **LocalBusiness schema.** `layout.mjs` already builds
+   `businessSchema()`, `serviceSchema()` and `breadcrumbSchema()` for the
+   static build. Add them to Yoast's graph via `wpseo_schema_graph` (do not
+   print a second, competing graph). Use type Electrician (also
+   HomeAndConstructionBusiness), with NAP from `SITE`, areaServed, and the
+   services. No aggregateRating until there are genuine reviews.
+3. **301s for the 35 dead URLs.** The map is in
+   `build/testserver/htaccess-production.txt` sections 4-6. Ship it as a
+   third marked .htaccess block ("WHT Redirects"); `merge-htaccess.mjs`
+   already handles named blocks. Skip its www/https rules if Xneelo already
+   does them; check first.
+4. **Open Graph:** og:image `/assets/og-image.jpg` for link previews,
+   through Yoast's settings or `wpseo_opengraph_image`.
+5. **Accessibility 97 -> 100:** the skip link targets `#wht-main`, which
+   Elementor pages lack, and there is no `<main>` landmark.
+6. **In wp-admin (logged in):**
+   - Yoast: author archives off, date archives off, and check that the
+     sitemap lists only the 12 pages.
+   - A page cache (WP Super Cache, or Cloudflare free). The server takes
+     ~3 s to first byte.
+   - An SMTP plugin, plus SPF/DKIM, so form leads don't go to spam.
+   - Two-factor login, login attempt limits, auto-updates, and an off-site
+     backup (UpdraftPlus).
+   - Elementor -> Tools -> Clear Files & Data. Page CSS is still stuck
+     "inline" from the 18 Nov incident. The print-order fix makes this
+     safe; check the layout straight after.
+7. **Google Search Console and Bing Webmaster Tools:** verify, submit
+   `/sitemap_index.xml`, request indexing of the 12 pages. Bing also feeds
+   ChatGPT and Copilot search.
+8. **Analytics:** GA4 via Tag Manager. Then the plugin can add
+   `data-wht-event` to Elementor CTA links so calls, WhatsApp and quote
+   clicks are tracked (`wht.js` already pushes them).
+
+**Off-site, the biggest factors for local search (needs WHT):**
+- **Google Business Profile:** claim or verify it; primary category
+  Electrician, add Solar energy equipment supplier/installer and Plumber
+  if accurate; service areas; hours; real job photos; website link;
+  regular posts.
+- **Reviews:** a simple ask-every-customer routine with the GBP review
+  link. Genuine reviews only (standing rule). Add aggregateRating to the
+  schema once they exist.
+- **Consistent listings (NAP):** Bing Places, Apple Business Connect, and
+  South African directories (Brabys, Snupit, Yellow Pages SA, Hello Peter),
+  all with exactly the same name, address and phone as the site.
+- **Content, drafted for WHT's approval** (no unconfirmed claims):
+  - real Recent Work write-ups (location, problem, fix, linked service);
+  - suburb or area pages (Benoni, Boksburg, Kempton Park, Germiston, East
+    Rand) only if WHT confirms it works there and there is real,
+    non-duplicate content for each;
+  - more FAQs drawn from questions customers actually ask.
+
 ## 18 Nov 2026 (latest): security and Agentic Browsing, LIVE
 
 - **Security stage 1** (FrostyCreations/WHTElectrical#8): .htaccess WHT
