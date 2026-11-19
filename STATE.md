@@ -161,6 +161,15 @@ In order (repo work first, then wp-admin, then off-site):
   back on PHP mail. Next: check/reset the info@ password in konsoleH,
   reactivate, re-enter it, send a test, and only leave it active if the
   test succeeds.
+- **og:image + main landmark LIVE** (abe79f9, 19 Nov): Yoast now prints
+  og:image /assets/og-image.jpg (1200x630, summary_large_image) on every
+  page without its own image (`wpseo_add_opengraph_images`, switch
+  og_image). Page content is wrapped in `<main id="wht-main">` via
+  the_content priority 99 (switch main), so the header skip link works
+  and there is a main landmark (plan item 5, a11y 97 -> expect 100).
+  Checked live at 1440 and 390: containers centred (123 px each side at
+  1440), hero copy z-index 3, Elementor CSS before wht.css, no horizontal
+  scroll, skip link lands on #wht-main, all requests 200.
 - WP-Optimize showed a setup wizard offering to turn on minify/"lighter
   files": exited WITHOUT saving. Don't accept it: it can reorder CSS.
   Purge reliably via the admin-bar "Purge cache for all pages" link.
