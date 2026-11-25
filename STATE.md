@@ -170,6 +170,16 @@ In order (repo work first, then wp-admin, then off-site):
   Checked live at 1440 and 390: containers centred (123 px each side at
   1440), hero copy z-index 3, Elementor CSS before wht.css, no horizontal
   scroll, skip link lands on #wht-main, all requests 200.
+- **Email signature (25 Nov):** banner GIF live at
+  /assets/img/wht-email-signature.gif (1200x320, shown at 600x160, 9 s
+  loop, ~330 KB; first frame = logo + tagline for Outlook). Regenerate
+  with build/email-signature/make.mjs (deps in its header). Outlook-ready
+  HTML: build/email-signature/wht-signature.html (banner + clickable
+  contact line + disclaimer), also in Google Drive (francois.theron801
+  account, private: share "anyone with link"). SOP + disclaimer doc:
+  https://claude.ai/artifact/EA3Hi6b5t3EBDFXStLRm1n (WHT to approve the
+  disclaimer). GA4: Holly added as Administrator; andy@ and dominique@
+  bigondigital.co.za are not Google accounts.
 - WP-Optimize showed a setup wizard offering to turn on minify/"lighter
   files": exited WITHOUT saving. Don't accept it: it can reorder CSS.
   Purge reliably via the admin-bar "Purge cache for all pages" link.
